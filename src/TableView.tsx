@@ -1,22 +1,14 @@
 import React, { Component, Fragment } from 'react';
-import { Table, Button, Row, Col } from 'antd';
+import { Table } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-
-interface Action {
-    text: string,
-    perform: () => void
-}
+import ToolbarButton, {ActionProps} from "./ActionButton";
 
 interface TableViewProps<T> {
     columns?: ColumnProps<T>[];
-    actions?: Action[];
+    actions?: ActionProps[];
 }
 
 export class TableView<T> extends Component<TableViewProps<T>, any> {
-
-    constructor( props: TableViewProps<T> ) {
-        super(props)
-    }
 
     render() {
         return (
@@ -32,9 +24,10 @@ export class TableView<T> extends Component<TableViewProps<T>, any> {
     private renderToolbar() {
         return (
             this.props.actions? 
-                this.props.actions.map( a => 
-                    <Button className="toolbar-button">{a.text}</Button> 
-                ): null
+                this.props.actions.map( a =>
+                    //text={a.text} icon={a.text} extended={a.extended} perform={a.perform}
+                    <ToolbarButton {...a} />)
+                : null
         )
     }
 

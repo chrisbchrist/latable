@@ -1,8 +1,6 @@
 @import '~antd/dist/antd.min.css';
+@import 'indigo.css';
 
-.toolbar-button {
-   padding-right: 2mm
-}
 
 .App {
   text-align: center;

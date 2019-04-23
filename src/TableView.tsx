@@ -1,19 +1,26 @@
 import React, { Component, Fragment } from 'react';
 import { Table } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import ToolbarButton, {ActionProps} from "./ActionButton";
+import {TableAction} from "./tableview/Actions";
+import ActionButton from "./ActionButton";
+import {ActionProps} from "./Action";
 
 interface TableViewProps<T> {
     columns?: ColumnProps<T>[];
-    actions?: ActionProps[];
+    actions: TableAction<T>[];
+    toolbarExpanded?: boolean
 }
 
 export class TableView<T> extends Component<TableViewProps<T>, any> {
 
+    private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
+
     render() {
         return (
             <Fragment>
-                <Table columns={this.props.columns} 
+                <Table
+                    ref={this.tableRef}
+                    columns={this.props.columns}
                     bordered 
                     title={ () => this.renderToolbar() }
                 />
@@ -23,11 +30,7 @@ export class TableView<T> extends Component<TableViewProps<T>, any> {
 
     private renderToolbar() {
         return (
-            this.props.actions? 
-                this.props.actions.map( a =>
-                    //text={a.text} icon={a.text} extended={a.extended} perform={a.perform}
-                    <ToolbarButton {...a} />)
-                : null
+            this.props.actions.map( a => <ActionButton {...a as ActionProps }/> )
         )
     }
 

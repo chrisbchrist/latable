@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import TableView from './TableView';
 
 import './App.css'
-import {ActionProps} from "./ActionButton";
+import {TableAction, TableInsertAction} from "./tableview/Actions";
 
 const columns = [{
   title: 'Name',
@@ -18,10 +18,19 @@ const columns = [{
   key: 'address',
 }];
 
-const actions: ActionProps[] = [
-  { text: "Action1", icon: "plus", perform: () => { console.log("Action1") }, extended: true, type:"primary" },
-  { text: "Action2", icon: "edit", perform: () => { console.log("Action2") } },
-  { text: "Action3", icon: "delete", perform: () => { console.log("Action3") } }
+
+class InsertAction extends TableInsertAction<String> {
+
+  insert(item: String): String {
+    return "";
+  }
+
+}
+
+const actions: TableAction<String>[] = [
+  new InsertAction(),
+  new InsertAction( "Edit", "edit"),
+  new InsertAction("Delete", "delete"),
 ];
 
 

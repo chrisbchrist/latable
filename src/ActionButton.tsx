@@ -1,27 +1,23 @@
 import React, { Component } from 'react';
 import {Button, Icon, Tooltip} from 'antd';
-import {ButtonType} from "antd/lib/button";
+import {ActionProps} from "./Action";
 
 
-export interface ActionProps {
-    text: string,
-    icon?: string,
-    type?: ButtonType,
+export interface ActionButtonProps extends ActionProps {
     extended?: boolean,
-    perform: () => void
 }
 
-
-export class ActionButton extends Component<ActionProps, any> {
+export class ActionButton extends Component<ActionButtonProps, any> {
 
     render() {
 
-        const {text, icon,extended, type } = this.props;
+        const {text, icon, buttonType, disabled, extended } = this.props;
 
-        let button = <Button className="toolbar-button"  type={type}>
-            {icon?<Icon type={icon}/>: null}
-            {extended? text: null}
-        </Button>;
+        let button =
+            <Button className="toolbar-button" type={buttonType} disabled={disabled}>
+                {icon?<Icon type={icon}/>: null}
+                {extended? text: null}
+            </Button>;
 
         return extended? button: <Tooltip placement="bottom" title={text}>{button}</Tooltip>
 

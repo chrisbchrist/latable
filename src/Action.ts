@@ -4,7 +4,7 @@ import {ButtonType} from "antd/es/button";
 export interface ActionProps {
     text: string,
     icon?: string,
-    disabled?: boolean
+    disabled?: boolean,
     buttonType?: ButtonType
 }
 

@@ -8,21 +8,23 @@ import {ActionProps} from "./Action";
 interface TableViewProps<T> {
     columns?: ColumnProps<T>[];
     actions: TableAction<T>[];
-    toolbarExpanded?: boolean
+    title?: string;
+    toolbarExpanded?: boolean;
 }
 
 export class TableView<T> extends Component<TableViewProps<T>, any> {
 
-    private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
+    // private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
 
     render() {
         return (
             <Fragment>
                 <Table
-                    ref={this.tableRef}
+                    // ref={this.tableRef}
                     columns={this.props.columns}
-                    bordered 
-                    title={ () => this.renderToolbar() }
+                    bordered
+                    //loading={true}
+                    title={ () => <div> {this.props.title} {this.renderToolbar()}</div> }
                 />
             </Fragment>
         )
@@ -30,7 +32,7 @@ export class TableView<T> extends Component<TableViewProps<T>, any> {
 
     private renderToolbar() {
         return (
-            this.props.actions.map( a => <ActionButton {...a as ActionProps }/> )
+            this.props.actions.map( a => <ActionButton {...a as ActionProps } verbose={this.props.toolbarExpanded} /> )
         )
     }
 

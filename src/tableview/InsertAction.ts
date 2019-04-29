@@ -1,11 +1,13 @@
 import {Table} from "antd";
 import {isValidElement} from "react";
 import {TableAction} from "./Actions";
+import {ButtonType} from "antd/es/button";
 
 export abstract class InsertAction<T> implements TableAction<T> {
 
     constructor(public text: string = "Insert",
                 public icon: string = "plus",
+                public buttonType?: ButtonType,
                 public disabled: boolean = false) {}
 
     // needs to be final - no support for that in Typescript

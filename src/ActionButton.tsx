@@ -4,22 +4,22 @@ import {ActionProps} from "./Action";
 
 
 export interface ActionButtonProps extends ActionProps {
-    extended?: boolean,
+    verbose?: boolean,
 }
 
 export class ActionButton extends Component<ActionButtonProps, any> {
 
     render() {
 
-        const {text, icon, buttonType, disabled, extended } = this.props;
+        const {text, icon, buttonType, disabled, verbose } = this.props;
 
         let button =
             <Button className="toolbar-button" type={buttonType} disabled={disabled}>
                 {icon?<Icon type={icon}/>: null}
-                {extended? text: null}
+                {verbose? text: null}
             </Button>;
 
-        return extended? button: <Tooltip placement="bottom" title={text}>{button}</Tooltip>
+        return verbose? button: <Tooltip placement="bottom" title={text}>{button}</Tooltip>
 
     }
 

@@ -10,6 +10,7 @@ import {TableAction} from "../src/tableview/Actions";
 import {InsertAction} from "../src/tableview/InsertAction";
 
 import '../src/indigo.css';
+import {ButtonType} from "antd/es/button";
 
 const columns = [{
     title: 'Name',
@@ -27,21 +28,22 @@ const columns = [{
 
 const actions: TableAction<string>[] = [
     new InsertAction(),
-    new InsertAction( "Edit", "edit"),
-    new InsertAction("Delete", "delete"),
+    new InsertAction( "Edit", "edit", "dashed"),
+    new InsertAction("Delete", "delete", "danger"),
 ];
 
 storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
-storiesOf('Button', module)
-  .add('with text', () => <Button onClick={action('clicked')}>Hello Button</Button>)
-  .add('with some emoji', () => (
-    <Button onClick={action('clicked')}>
-      <span role="img" aria-label="so cool">
-        😀 😎 👍 💯
-      </span>
-    </Button>
-  ));
+// storiesOf('Button', module)
+//   .add('with text', () => <Button onClick={action('clicked')}>Hello Button</Button>)
+//   .add('with some emoji', () => (
+//     <Button onClick={action('clicked')}>
+//       <span role="img" aria-label="so cool">
+//         😀 😎 👍 💯
+//       </span>
+//     </Button>
+//   ));
 
 storiesOf('TableView', module)
-    .add(' - simple', () => <TableView columns={columns} actions={actions}/>);
+    .add(' - simple', () =>
+        <TableView title = {"Eugene"} columns={columns} actions={actions} toolbarExpanded={false}/>);

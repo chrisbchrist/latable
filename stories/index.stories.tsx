@@ -39,7 +39,6 @@ const actions: TableAction<string>[] = [
 ];
 
 
-
 // storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
 // storiesOf('Button', module)

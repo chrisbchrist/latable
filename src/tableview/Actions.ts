@@ -1,36 +1,62 @@
-import {Action} from "../Action";
-import {Table} from "antd";
+import {Action, ValidatableAction} from "../Action";
 import {BaseButtonProps} from "antd/es/button/button";
+import TableView from "./TableView";
 
-export interface TableAction<T> extends Action {
+export abstract class TableAction<T> implements ValidatableAction<T, TableView<T>> {
 
-    table: Table<T> | null
-    // updates the enabled state of the action
-    validate(): void
+    private _disabled = false;
+    private _source?: TableView<T>;
+
+    icon?: string;
+    description?: string;
+    buttonProps?: BaseButtonProps;
+
+    abstract text: string;
+
+    abstract perform(): void;
+    abstract validate(): boolean;
+
+    get disabled(): boolean {
+        return this._disabled;
+    }
+
+    protected setDisabled( disabled: boolean ) {
+        this._disabled = disabled
+    }
+
+    get source(): TableView<T> | undefined {
+        return this._source;
+    }
+
+    set source( source: TableView<T> | undefined ) {
+        this._source = source;
+        if ( source ) {
+            // source.handleSelect()
+        }
+    }
 
 }
 
-class InsertAction<T> implements TableAction<T> {
+class InsertAction<T> extends TableAction<T> {
 
-    disabled = false;
     text = "Insert";
     icon = "plus";
-    table = null;
 
-    constructor( private action?: (item: T) => T ) {}
 
-    // needs to be final - no support for that in Typescript
-    validate(): void {
-        this.disabled = this.isValid()
+    constructor( private action?: (item: T) => T ) {
+        super()
     }
 
-    protected isValid(): boolean {
+
+
+    // needs to be final - no support for that in Typescript
+    validate(): boolean {
         return true;
     }
 
     perform() {
 
-        if ( this.table ) {
+        if ( this.source ) {
 
             // let selectedItem: T = null; // get selected item
             // let item = insert(selectedItem);
@@ -38,11 +64,9 @@ class InsertAction<T> implements TableAction<T> {
 
         }
 
-
     }
 
 }
-
 
 export class TableActions<T>{
 
@@ -71,10 +95,10 @@ export class TableActions<T>{
         return this;
     }
 
-    disabled( disabled: boolean ): TableActions<T> {
-        this.action.disabled = disabled;
-        return this;
-    }
+    // disabled( disabled: boolean ): TableActions<T> {
+    //     this.action.disabled = disabled;
+    //     return this;
+    // }
 
     buttonProps( props: BaseButtonProps ) {
         this.action.buttonProps = props;

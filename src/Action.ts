@@ -10,6 +10,11 @@ export interface ActionProps {
 }
 
 export interface Action extends ActionProps {
-    perform: () => void
+    perform(): void
+}
+
+export interface ValidatableAction<T,C> extends Action {
+    source?: C // validation source, usually a component which triggers validation
+    validate(): boolean
 }
 

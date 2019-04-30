@@ -14,28 +14,29 @@ interface TableViewProps<T> {
 
 export class TableView<T> extends Component<TableViewProps<T>, any> {
 
-    private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
+    // private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
 
     render() {
         return (
             <Fragment>
                 <Table
-                    ref={this.tableRef}
+                    // ref={this.tableRef}
                     columns={this.props.columns}
                     bordered
                     //loading={true}
-                    title={ () => <div> {this.props.title} {this.renderToolbar()}</div> }
+                    title={ () =>
+                        <div>
+                            {this.props.title}
+                            {
+                                this.props.actions.map(a => {
+                                    a.source = this;
+                                    return <ActionButton {...a as ActionProps} verbose={this.props.verboseToolbar}/>
+                                })
+                            }
+                        </div>
+                    }
                 />
             </Fragment>
-        )
-    }
-
-    private renderToolbar() {
-        return (
-            this.props.actions.map( a => {
-                a.table = this.tableRef.current;
-                return <ActionButton {...a as ActionProps } verbose={this.props.verboseToolbar} />
-            })
         )
     }
 

@@ -1,11 +1,12 @@
-import {ButtonType} from "antd/es/button";
+import {BaseButtonProps} from "antd/es/button/button";
 
 
 export interface ActionProps {
     text: string,
+    description?: string,
     icon?: string,
     disabled?: boolean,
-    buttonType?: ButtonType
+    buttonProps?: BaseButtonProps,
 }
 
 export interface Action extends ActionProps {

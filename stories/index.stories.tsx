@@ -1,16 +1,12 @@
 import React from 'react';
 
-import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
-import { linkTo } from '@storybook/addon-links';
+import {storiesOf} from '@storybook/react';
+// import {linkTo} from '@storybook/addon-links';
 
-import { Button, Welcome } from '@storybook/react/demo';
-import TableView from '../src/TableView';
-import {TableAction} from "../src/tableview/Actions";
-import {InsertAction} from "../src/tableview/InsertAction";
+import TableView from '../src/tableview/TableView';
+import {TableAction, TableActions} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import {ButtonType} from "antd/es/button";
 
 const columns = [{
     title: 'Name',
@@ -27,12 +23,24 @@ const columns = [{
 }];
 
 const actions: TableAction<string>[] = [
-    new InsertAction(),
-    new InsertAction( "Edit", "edit", "dashed"),
-    new InsertAction("Delete", "delete", "danger"),
+    TableActions.insert<string>(s => s )
+                .description("Insert Item")
+                .buttonProps({ type: "primary", shape: "round"}).build(),
+    TableActions.insert<string>(s => s )
+                .text('Edit')
+                .icon('edit')
+                .description("Edit Item")
+                .buttonProps({ type: "dashed"}).build(),
+    TableActions.insert<string>(s => s )
+                .text('Delete')
+                .icon('delete')
+                .description("Delete Item")
+                .buttonProps({ type: "danger"}).build(),
 ];
 
-storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
+
+
+// storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
 // storiesOf('Button', module)
 //   .add('with text', () => <Button onClick={action('clicked')}>Hello Button</Button>)
@@ -45,5 +53,9 @@ storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo(
 //   ));
 
 storiesOf('TableView', module)
-    .add(' - simple', () =>
-        <TableView title = {"Eugene"} columns={columns} actions={actions} toolbarExpanded={false}/>);
+    .add(' - with standard toolbar', () => {
+        return <TableView columns={columns} actions={actions} />
+    })
+    .add(' - with verbose toolbar', () => {
+        return <TableView columns={columns} actions={actions} verboseToolbar={true}/>
+    })

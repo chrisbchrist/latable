@@ -11,15 +11,16 @@ export class ActionButton extends Component<ActionButtonProps, any> {
 
     render() {
 
-        const {text, icon, buttonType, disabled, verbose } = this.props;
+        const {text, icon, disabled, verbose, description, buttonProps } = this.props;
 
-        let button =
-            <Button className="toolbar-button" type={buttonType} disabled={disabled}>
-                {icon?<Icon type={icon}/>: null}
-                {verbose? text: null}
-            </Button>;
-
-        return verbose? button: <Tooltip placement="bottom" title={text}>{button}</Tooltip>
+        return (
+            <Tooltip placement="bottom" title={description ? description : text}>
+                <Button className="toolbar-button" disabled={disabled} {...buttonProps}>
+                    {icon ? <Icon type={icon}/> : null}
+                    {verbose ? text : null}
+                </Button>
+            </Tooltip>
+        );
 
     }
 

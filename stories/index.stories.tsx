@@ -23,9 +23,9 @@ const columns = [{
 }];
 
 const actions: TableAction<string>[] = [
-    new InsertAction<string>(s => s ),
-    new UpdateAction<string>(s => s ),
-    new RemoveAction<string>(s => false),
+    new InsertAction(s => s ),
+    new UpdateAction(s => s ),
+    new RemoveAction(s => false),
 ];
 
 
@@ -54,9 +54,9 @@ storiesOf('TableView', module)
     .add(' - with custom toolbar button props', () => {
 
         const customActions: TableAction<string>[] = [
-            new InsertAction<string>(s => s, {buttonProps: { type: 'primary', shape: 'round'}} ),
-            new UpdateAction<string>(s => s, {buttonProps: { type: 'dashed'}} ),
-            new RemoveAction<string>(s => false, {buttonProps: { type: 'danger'}}),
+            new InsertAction(s => s, {buttonProps: { type: 'primary', shape: 'round'}} ),
+            new UpdateAction(s => s, {buttonProps: { type: 'dashed'}} ),
+            new RemoveAction(s => false, { buttonProps: { type: 'danger'}}),
         ];
 
         return <TableView columns={columns} actions={customActions} verboseToolbar={true}/>

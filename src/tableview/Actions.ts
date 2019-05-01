@@ -1,49 +1,40 @@
-import {ActionProps, ValidatableActionX} from "../Action";
+// import {Action, ActionProps, ValidatableAction} from "../action/Action";
 import TableView from "./TableView";
-import {observable, when} from "mobx";
+import {ActionProps, ValidatableAction} from "../action/Action";
+import {Table} from "antd";
 
-export abstract class TableAction<T> extends ValidatableActionX<TableView<T>> {
+export abstract class TableAction<T> extends ValidatableAction<Table<T>> {
 
-    @observable source?: TableView<T>;
-
-    protected constructor() {
-        super();
-        when(
-            () => this.source != undefined,
-            () => this.doValidate()
-        )
-    }
-
-    private doValidate(): void {
-        this.disabled = !this.validate()
-    }
-
-    validate(): boolean {
-        return true;
-    }
-}
-
-export class InsertAction<T> extends TableAction<T> {
-
-    constructor( private action?: (item: T) => T, props?: ActionProps ) {
-        super();
-        this.text = "Insert";
-        this.icon = "plus";
-        this.description = "Insert Item";
+    constructor( props?: ActionProps ) {
+        super(() => this.doPerform());
         if (props) {
             Object.assign(this, props)
         }
     }
 
+    protected abstract doPerform(): void
+
+}
+
+export class InsertAction<T> extends TableAction<T> {
+
+    text = "Insert";
+    icon = "plus";
+    description = "Insert Item";
+
+    constructor( private action?: (item: T) => T, props?: ActionProps ) {
+        super(  props);
+    }
 
     // needs to be final - no support for that in Typescript
-    validate(): boolean {
+    protected isValid(): boolean {
         return true;
     }
 
-    perform(): void {
+    protected doPerform(): void {
 
-        if ( this.source ) {
+        //TODO use action method here
+        if ( this.validationSource ) {
 
             // let selectedItem: T = null; // get selected item
             // let item = insert(selectedItem);
@@ -57,25 +48,23 @@ export class InsertAction<T> extends TableAction<T> {
 
 export class UpdateAction<T> extends TableAction<T> {
 
-    constructor( private action?: (item: T) => T, props?: ActionProps ) {
-        super();
-        this.text = "Edit";
-        this.icon = "edit";
-        this.description = "Edit Item";
-        if (props) {
-            Object.assign(this, props)
-        }
-    }
+    text = "Edit";
+    icon = "edit";
+    description = "Edit Item";
 
+    constructor( private action?: (item: T) => T, props?: ActionProps ) {
+        super(props);
+    }
 
     // needs to be final - no support for that in Typescript
-    validate(): boolean {
-        return this.source != undefined && this.source.selectedRowCount() == 1;
+    protected isValid(): boolean {
+        return this.validationSource != undefined //&& this.validationSource.selectedRowCount() == 1;
     }
 
-    perform(): void {
+    protected doPerform(): void {
 
-        if ( this.source ) {
+        //TODO use action method here
+        if ( this.validationSource ) {
 
             // let selectedItem: T = null; // get selected item
             // let item = insert(selectedItem);
@@ -89,25 +78,22 @@ export class UpdateAction<T> extends TableAction<T> {
 
 export class RemoveAction<T> extends TableAction<T> {
 
-    constructor( private action?: (item: T) => boolean, props?: ActionProps ) {
-        super();
-        this.text = "Delete";
-        this.icon = "delete";
-        this.description = "Delete Item";
-        if (props) {
-            Object.assign(this, props)
-        }
-    }
+    text = "Delete";
+    icon = "delete";
+    description = "Delete Item";
 
+    constructor( private action?: (item: T) => boolean, props?: ActionProps ) {
+        super(props);
+    }
 
     // needs to be final - no support for that in Typescript
-    validate(): boolean {
-        return this.source != undefined && this.source.selectedRowCount() == 1;
+    protected isValid(): boolean {
+        return this.validationSource != undefined //&& this.validationSource.selectedRowCount() == 1;
     }
 
-    perform(): void {
-
-        if ( this.source ) {
+    protected doPerform(): void {
+        //TODO use action method her
+        if ( this.validationSource ) {
 
             // let selectedItem: T = null; // get selected item
             // let item = insert(selectedItem);

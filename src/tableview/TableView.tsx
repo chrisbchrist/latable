@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Table } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
 import {TableAction} from "./Actions";
-import ActionButton from "../ActionButton";
+import {ActionButton} from "../action/ActionButton";
 import {observer} from "mobx-react";
 
 interface TableViewProps<T> {
@@ -49,8 +49,9 @@ export class TableView<T> extends Component<TableViewProps<T>, any> {
                             {this.props.title}
                             {
                                 actions.map(a => {
-                                    a.source = this;
-                                    return <ActionButton action={a} verbose={this.props.verboseToolbar}/>
+                                    a.validationSource = this.tableRef.current;
+                                    return <ActionButton action={a}
+                                                         verbose={this.props.verboseToolbar}/>
                                 })
                             }
                         </div>

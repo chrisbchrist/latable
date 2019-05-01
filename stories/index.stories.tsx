@@ -4,7 +4,7 @@ import {storiesOf} from '@storybook/react';
 // import {linkTo} from '@storybook/addon-links';
 
 import TableView from '../src/tableview/TableView';
-import {TableAction, TableActions} from "../src/tableview/Actions";
+import {InsertAction, RemoveAction, TableAction, UpdateAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
 
@@ -23,19 +23,9 @@ const columns = [{
 }];
 
 const actions: TableAction<string>[] = [
-    TableActions.insert<string>(s => s )
-                .description("Insert Item")
-                .buttonProps({ type: "primary", shape: "round"}).build(),
-    TableActions.insert<string>(s => s )
-                .text('Edit')
-                .icon('edit')
-                .description("Edit Item")
-                .buttonProps({ type: "dashed"}).build(),
-    TableActions.insert<string>(s => s )
-                .text('Delete')
-                .icon('delete')
-                .description("Delete Item")
-                .buttonProps({ type: "danger"}).build(),
+    new InsertAction<string>(s => s ),
+    new UpdateAction<string>(s => s ),
+    new RemoveAction<string>(s => false),
 ];
 
 
@@ -52,9 +42,22 @@ const actions: TableAction<string>[] = [
 //   ));
 
 storiesOf('TableView', module)
+
     .add(' - with standard toolbar', () => {
         return <TableView columns={columns} actions={actions} />
     })
+
     .add(' - with verbose toolbar', () => {
         return <TableView columns={columns} actions={actions} verboseToolbar={true}/>
     })
+
+    .add(' - with custom toolbar button props', () => {
+
+        const customActions: TableAction<string>[] = [
+            new InsertAction<string>(s => s, {buttonProps: { type: 'primary', shape: 'round'}} ),
+            new UpdateAction<string>(s => s, {buttonProps: { type: 'dashed'}} ),
+            new RemoveAction<string>(s => false, {buttonProps: { type: 'danger'}}),
+        ];
+
+        return <TableView columns={columns} actions={customActions} verboseToolbar={true}/>
+    });

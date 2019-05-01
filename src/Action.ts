@@ -1,20 +1,29 @@
 import {BaseButtonProps} from "antd/es/button/button";
-
+import {observable} from 'mobx'
 
 export interface ActionProps {
-    text: string,
+    text?: string,
     description?: string,
     icon?: string,
     disabled?: boolean,
     buttonProps?: BaseButtonProps,
 }
 
-export interface Action extends ActionProps {
-    perform(): void
+export abstract class ActionX implements ActionProps {
+
+    @observable text?: string;
+    @observable description?: string;
+    @observable icon?: string;
+    @observable disabled?: boolean;
+    @observable buttonProps?: BaseButtonProps;
+
+    abstract perform(): void
 }
 
-export interface ValidatableAction<T,C> extends Action {
-    source?: C // validation source, usually a component which triggers validation
-    validate(): boolean
+export abstract class ValidatableActionX<T> extends ActionX {
+
+    source?: T; // validation source, usually a component which triggers validation
+
+    abstract validate(): boolean
 }
 

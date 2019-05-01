@@ -1,52 +1,39 @@
-import {Action, ValidatableAction} from "../Action";
-import {BaseButtonProps} from "antd/es/button/button";
+import {ActionProps, ValidatableActionX} from "../Action";
 import TableView from "./TableView";
+import {observable, when} from "mobx";
 
-export abstract class TableAction<T> implements ValidatableAction<T, TableView<T>> {
+export abstract class TableAction<T> extends ValidatableActionX<TableView<T>> {
 
-    private _disabled = false;
-    private _source?: TableView<T>;
+    @observable source?: TableView<T>;
 
-    icon?: string;
-    description?: string;
-    buttonProps?: BaseButtonProps;
-
-    abstract text: string;
-
-    abstract perform(): void;
-    abstract validate(): boolean;
-
-    get disabled(): boolean {
-        return this._disabled;
+    protected constructor() {
+        super();
+        when(
+            () => this.source != undefined,
+            () => this.doValidate()
+        )
     }
 
-    protected setDisabled( disabled: boolean ) {
-        this._disabled = disabled
+    private doValidate(): void {
+        this.disabled = !this.validate()
     }
 
-    get source(): TableView<T> | undefined {
-        return this._source;
+    validate(): boolean {
+        return true;
     }
-
-    set source( source: TableView<T> | undefined ) {
-        this._source = source;
-        if ( source ) {
-            // source.handleSelect()
-        }
-    }
-
 }
 
-class InsertAction<T> extends TableAction<T> {
+export class InsertAction<T> extends TableAction<T> {
 
-    text = "Insert";
-    icon = "plus";
-
-
-    constructor( private action?: (item: T) => T ) {
-        super()
+    constructor( private action?: (item: T) => T, props?: ActionProps ) {
+        super();
+        this.text = "Insert";
+        this.icon = "plus";
+        this.description = "Insert Item";
+        if (props) {
+            Object.assign(this, props)
+        }
     }
-
 
 
     // needs to be final - no support for that in Typescript
@@ -54,7 +41,7 @@ class InsertAction<T> extends TableAction<T> {
         return true;
     }
 
-    perform() {
+    perform(): void {
 
         if ( this.source ) {
 
@@ -68,42 +55,68 @@ class InsertAction<T> extends TableAction<T> {
 
 }
 
-export class TableActions<T>{
+export class UpdateAction<T> extends TableAction<T> {
 
-    constructor( private action: TableAction<T> ) {}
-
-    public static insert<T>(action: (item: T) => T ): TableActions<T> {
-        return new TableActions<T>( new InsertAction<T>(action));
-    };
-
-    build(): TableAction<T> {
-        return this.action;
+    constructor( private action?: (item: T) => T, props?: ActionProps ) {
+        super();
+        this.text = "Edit";
+        this.icon = "edit";
+        this.description = "Edit Item";
+        if (props) {
+            Object.assign(this, props)
+        }
     }
 
-    text( text: string ): TableActions<T> {
-        this.action.text = text;
-        return this;
+
+    // needs to be final - no support for that in Typescript
+    validate(): boolean {
+        return this.source != undefined && this.source.selectedRowCount() == 1;
     }
 
-    icon( icon: string ): TableActions<T> {
-        this.action.icon = icon;
-        return this;
-    }
+    perform(): void {
 
-    description( description: string ): TableActions<T> {
-        this.action.description = description;
-        return this;
-    }
+        if ( this.source ) {
 
-    // disabled( disabled: boolean ): TableActions<T> {
-    //     this.action.disabled = disabled;
-    //     return this;
-    // }
+            // let selectedItem: T = null; // get selected item
+            // let item = insert(selectedItem);
+            //// add item to the table
 
-    buttonProps( props: BaseButtonProps ) {
-        this.action.buttonProps = props;
-        return this;
+        }
+
     }
 
 }
+
+export class RemoveAction<T> extends TableAction<T> {
+
+    constructor( private action?: (item: T) => boolean, props?: ActionProps ) {
+        super();
+        this.text = "Delete";
+        this.icon = "delete";
+        this.description = "Delete Item";
+        if (props) {
+            Object.assign(this, props)
+        }
+    }
+
+
+    // needs to be final - no support for that in Typescript
+    validate(): boolean {
+        return this.source != undefined && this.source.selectedRowCount() == 1;
+    }
+
+    perform(): void {
+
+        if ( this.source ) {
+
+            // let selectedItem: T = null; // get selected item
+            // let item = insert(selectedItem);
+            //// add item to the table
+
+        }
+
+    }
+
+}
+
 

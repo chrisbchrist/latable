@@ -4,7 +4,7 @@ import {storiesOf} from '@storybook/react';
 // import {linkTo} from '@storybook/addon-links';
 
 import TableView from '../src/tableview/TableView';
-import {InsertAction, RemoveAction, TableAction, UpdateAction} from "../src/tableview/Actions";
+import {InsertTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
 
@@ -22,12 +22,6 @@ const columns = [{
     key: 'address',
 }];
 
-const actions: TableAction<string>[] = [
-    new InsertAction(s => s ),
-    new UpdateAction(s => s ),
-    new RemoveAction(s => false),
-];
-
 
 // storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
@@ -43,21 +37,30 @@ const actions: TableAction<string>[] = [
 
 storiesOf('TableView', module)
 
+
     .add(' - with standard toolbar', () => {
-        return <TableView columns={columns} actions={actions} />
+        return <TableView columns={columns} >
+                    <InsertTableAction onInsert= {item => item }/>
+                    <UpdateTableAction onUpdate= {item => item }/>
+                    <RemoveTableAction onRemove= {() => true }/>
+               </TableView>
     })
 
     .add(' - with verbose toolbar', () => {
-        return <TableView columns={columns} actions={actions} verboseToolbar={true}/>
+        return <TableView columns={columns} verboseToolbar={true}>
+                    <InsertTableAction onInsert= {item => item }/>
+                    <UpdateTableAction onUpdate= {item => item }/>
+                    <RemoveTableAction onRemove= {() => true }/>
+              </TableView>
     })
 
     .add(' - with custom toolbar button props', () => {
 
-        const customActions: TableAction<string>[] = [
-            new InsertAction(s => s, {buttonProps: { type: 'primary', shape: 'round'}} ),
-            new UpdateAction(s => s, {buttonProps: { type: 'dashed'}} ),
-            new RemoveAction(s => false, { buttonProps: { type: 'danger'}}),
-        ];
-
-        return <TableView columns={columns} actions={customActions} verboseToolbar={true}/>
+        return (
+            <TableView columns={columns} verboseToolbar={true}>
+                <InsertTableAction onInsert= {item => item } buttonProps={{ type: 'primary', shape: 'round'}}/>
+                <UpdateTableAction onUpdate= {item => item } buttonProps={{ type: 'dashed'}}/>
+                <RemoveTableAction onRemove= {() => true } buttonProps={{type:"danger" }} />
+            </TableView>
+        )
     });

@@ -1,71 +1,70 @@
-import React, { Component, Fragment } from 'react';
-import { Table } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
-import {TableAction} from "./Actions";
-import {ActionButton} from "../action/ActionButton";
-import {observer} from "mobx-react";
+import React, {Component} from 'react';
+import {Table} from 'antd';
+import {ColumnProps} from 'antd/lib/table';
+import {TableRowSelection} from "antd/es/table";
 
-interface TableViewProps<T> {
+export interface DomainEntity {
+    id: string
+}
+
+export interface TableViewProps<T extends DomainEntity> {
+
     columns?: ColumnProps<T>[];
-    actions?: TableAction<T>[];
     title?: string;
     verboseToolbar?: boolean;
-
     data?: T[];
 }
 
-@observer
-export class TableView<T> extends Component<TableViewProps<T>, any> {
+export type Keys = string[] | number[];
 
-    private readonly tableRef: React.RefObject<Table<T>> = React.createRef();
+export interface TableViewState<T extends DomainEntity> {
+    verboseToolbar?: boolean
+    selectedRowKeys: Keys;
+}
 
-    state = {
-        selectedRowKeys: [], // Check here to configure the default column
+export const TableViewContext = React.createContext<any>({});
+
+export class TableView<T extends DomainEntity> extends Component<TableViewProps<T>, TableViewState<T>> {
+
+    constructor(props:TableViewProps<T>) {
+        super(props);
+        this.state = {
+            selectedRowKeys: [],
+            verboseToolbar: this.props.verboseToolbar
+        }
+
+    }
+
+    onSelectChange = (selectedRowKeys: string[] | number[]) => {
+        console.log('selectedRowKeys changed: ', selectedRowKeys);
+        this.setState({ selectedRowKeys });
     };
-    //
-    // onSelectChange = (selectedRowKeys: T[]) => {
-    //     console.log('selectedRowKeys changed: ', selectedRowKeys);
-    //     this.setState({ selectedRowKeys });
-    // }
 
     render() {
 
-        // const rowSelection: RowSelectionType = {
-        //     selectedRowKeys: [],
-        //     onChange: this.onSelectChange
-        // }
+        const rowSelection: TableRowSelection<T> = {
+            selectedRowKeys: [],
+            onChange: this.onSelectChange
+        };
 
-        const actions = this.props.actions? this.props.actions: [];
-
+        //TODO pass down table props
         return (
-            <Fragment>
+            <TableViewContext.Provider value={ this.state}>
                 <Table
-                    ref={this.tableRef}
                     columns={this.props.columns}
                     bordered
                     //loading={true}
-                    title={ () =>
+                    title={() =>
                         <div>
                             {this.props.title}
-                            {
-                                actions.map(a => {
-                                    a.validationSource = this.tableRef.current;
-                                    return <ActionButton action={a}
-                                                         verbose={this.props.verboseToolbar}/>
-                                })
-                            }
+                            {this.props.children}
                         </div>
                     }
-
                     // data={this.props.data}
-                    // rowSelection={rowSelection}
+                    rowSelection={rowSelection}
                 />
-            </Fragment>
+            </TableViewContext.Provider>
         )
-    }
-
-    public selectedRowCount(): number {
-        return this.tableRef.current? this.state.selectedRowKeys.length: 0;
     }
 
 }

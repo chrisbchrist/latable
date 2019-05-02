@@ -1,35 +1,37 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {Button, Icon, Tooltip} from 'antd';
-import {observer} from "mobx-react";
-import {Action} from "./Action";
+
+import {BaseButtonProps} from "antd/es/button/button";
 
 export interface ActionButtonProps {
-    action: Action
+    text?: string;
+    description?: string;
+    icon?: string;
+    disabled?: boolean;
+    buttonProps?: BaseButtonProps;
     verbose?: boolean,
+    perform? :() => void
 }
 
-@observer
-export class ActionButton extends Component<ActionButtonProps, any> {
 
-    render() {
+export const ActionButton = (props: ActionButtonProps) => {
 
-        const {icon, disabled, description, buttonProps} = this.props.action;
-        const verbose = this.props.verbose;
-        const text = this.props.action.text ? this.props.action.text : "???";
+    const {disabled, description, buttonProps, verbose, perform } = props;
+    const text = props.text ? props.text : "???";
+    const icon = props.icon ? props.icon : "question";
 
-        return (
-            <Tooltip placement="bottom" title={description ? description : text}>
-                <Button className="toolbar-button"
-                        disabled={disabled}
-                        {...buttonProps}
-                        onClick={() => this.props.action.perform()}>
-                    {icon ? <Icon type={icon}/> : null}
-                    {verbose ? text : null}
-                </Button>
-            </Tooltip>
-        );
+    return (
+        <Tooltip placement="bottom" title={description ? description : text}>
+            <Button className="toolbar-button"
+                    disabled={disabled}
+                    {...buttonProps}
+                    onClick={() => { if (perform) perform() }} >
+                {icon ? <Icon type={icon}/> : null}
+                {verbose ? text : null}
+            </Button>
+        </Tooltip>
+    );
+};
 
-    }
-
-}
+export default ActionButton;
 

@@ -1,71 +1,68 @@
-import React, {Component} from 'react';
+import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {ColumnProps} from 'antd/lib/table';
-import {TableRowSelection} from "antd/es/table";
 
 export interface DomainEntity {
-    id: string
+    key: string
 }
 
-export interface TableViewProps<T extends DomainEntity> {
+export interface TableViewProps<T extends DomainEntity>  {
 
     columns?: ColumnProps<T>[];
     title?: string;
     verboseToolbar?: boolean;
-    data?: T[];
+    dataSource?: T[];
+    children?: ReactNode;
 }
-
-export type Keys = string[] | number[];
 
 export interface TableViewState<T extends DomainEntity> {
     verboseToolbar?: boolean
-    selectedRowKeys: Keys;
+    selectedRowKeys: string[] | number[];
 }
 
 export const TableViewContext = React.createContext<any>({});
 
-export class TableView<T extends DomainEntity> extends Component<TableViewProps<T>, TableViewState<T>> {
+export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    constructor(props:TableViewProps<T>) {
-        super(props);
-        this.state = {
-            selectedRowKeys: [],
-            verboseToolbar: this.props.verboseToolbar
-        }
+//    const [state, setState] = useState<TableViewState<T>>({ selectedRowKeys:[], verboseToolbar: props.verboseToolbar});
+    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]|number[]>([]);
+    const [verboseToolbar]= useState(props.verboseToolbar);
 
-    }
-
-    onSelectChange = (selectedRowKeys: string[] | number[]) => {
-        console.log('selectedRowKeys changed: ', selectedRowKeys);
-        this.setState({ selectedRowKeys });
+    const setSelection = (selection: string[] | number[]) => {
+        console.log('selectedRowKeys changed: ', selection);
+        setSelectedRowKeys(selection);
     };
 
-    render() {
+    const selectRow = (row: T) => {
+        setSelection([row.key]);
+    };
 
-        const rowSelection: TableRowSelection<T> = {
-            selectedRowKeys: [],
-            onChange: this.onSelectChange
-        };
+    const context = { selectedRowKeys: selectedRowKeys, verboseToolbar: verboseToolbar};
 
-        //TODO pass down table props
-        return (
-            <TableViewContext.Provider value={ this.state}>
-                <Table
-                    columns={this.props.columns}
-                    bordered
-                    //loading={true}
-                    title={() =>
-                        <div>
-                            {this.props.title}
-                            {this.props.children}
-                        </div>
-                    }
-                    // data={this.props.data}
-                    rowSelection={rowSelection}
-                />
-            </TableViewContext.Provider>
-        )
-    }
+    //TODO pass down table props
+    return (
+        <TableViewContext.Provider value={context}>
+            <Table
+                columns={props.columns}
+                bordered
+                //loading={true}
+                title={() =>
+                    <div>
+                        {props.title}
+                        {props.children}
+                    </div>
+                }
+                dataSource={props.dataSource}
+                rowSelection={{
+                    selectedRowKeys: selectedRowKeys,
+                    onChange: setSelection
+                }}
+                onRow={record => ({
+                    onClick: () => selectRow(record),
+                })}
+            />
+        </TableViewContext.Provider>
+    )
 
 }
 

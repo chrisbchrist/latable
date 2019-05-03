@@ -26,33 +26,33 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
 }
 
 export interface InsertTableActionProps<T extends DomainEntity> extends ActionButtonProps {
-    onInsert: (item: T) => T
+    onInsert: (item?: T) => T | undefined
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
     return (
-        <TableAction
+        <TableAction<T, InsertTableActionProps<T>>
             text="Insert"
             icon="plus"
             isValid={() => true}
-            doPerform={() => {}} //TODO implement insert
+            doPerform={ctx => ctx.insertSelectedItem(item => props.onInsert(item))}
             {...props}
         />
     );
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends ActionButtonProps {
-    onUpdate: (item: T) => T
+    onUpdate: (item: T) => T | undefined
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
 
     return (
-        <TableAction
+        <TableAction<T, UpdateTableActionProps<T>>
             text="Edit"
             icon="edit"
             isValid={ctx => ctx.selectedRowKeys.length == 1}
-            doPerform={() => {}} // TODO implement update
+            doPerform={ctx => ctx.updateSelectedItem( item => props.onUpdate(item))}
             {...props}
         />
     );

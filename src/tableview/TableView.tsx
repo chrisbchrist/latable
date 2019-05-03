@@ -17,6 +17,8 @@ export interface TableViewProps<T extends DomainEntity>  {
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: string[] | number[];
     verboseToolbar?: boolean;
+    insertSelectedItem: (onInsert: (item?: T) => T | undefined) => void
+    updateSelectedItem: (onUpdate: (item: T) => T | undefined) => void
     removeSelectedItem: () => void
 }
 
@@ -37,6 +39,31 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setSelection([row.key]);
     }
 
+    function insertSelectedItem( onInsert: (item?: T) => T | undefined) {
+        const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
+        const insertedItem = onInsert(selectedItem);
+        if ( insertedItem ) {
+            let data = [...dataSource];
+            data.push(insertedItem);
+            setDataSource(data);
+            selectRow(insertedItem)
+        }
+    }
+
+    function updateSelectedItem( onUpdate: (item: T) => T | undefined) {
+        const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
+        if (selectedItem) {
+            const selectedIndex = selectedRowKeys.length == 0 ? -1 : dataSource.indexOf(selectedItem);
+            const updatedItem = onUpdate(selectedItem);
+            if (updatedItem) {
+                let data = [...dataSource];
+                data[selectedIndex] = updatedItem;
+                setDataSource(data);
+                selectRow(updatedItem)
+            }
+        }
+    }
+
     function removeSelectedItem() {
         // console.log("Preparing to remove item with key=" + selectedRowKeys[0])
         const item = dataSource.find(e => e.key === selectedRowKeys[0]);
@@ -55,6 +82,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const context = {
         selectedRowKeys: selectedRowKeys,
         verboseToolbar: verboseToolbar,
+        insertSelectedItem: insertSelectedItem,
+        updateSelectedItem: updateSelectedItem,
         removeSelectedItem: removeSelectedItem,
     };
 

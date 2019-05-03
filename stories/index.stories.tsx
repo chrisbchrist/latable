@@ -27,19 +27,19 @@ const data = [
         key:  "1",
         firstName: "Jason",
         lastName: "Rocco",
-        age :"47"
+        age :47
     },
     {
         key: "2",
         firstName: "Roman",
         lastName: "Vorobiev",
-        age :"52"
+        age :52
     },
     {
         key: "3",
         firstName: "Vladimir",
         lastName: "Birbrier",
-        age :"52"
+        age :40
     },
 
 ];

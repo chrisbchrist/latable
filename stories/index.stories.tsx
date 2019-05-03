@@ -59,6 +59,8 @@ const data = [
 
 storiesOf('TableView', module)
 
+    .addDecorator(story => <div style={{ padding: '1rem' }}>{story()}</div>)
+
     .add('with standard toolbar', () => {
         return (
             <TableView columns={columns} dataSource={data}>
@@ -79,11 +81,13 @@ storiesOf('TableView', module)
         )
     })
 
-    .add('with custom toolbar button props', () => {
+    .add('with custom toolbar button properties', () => {
 
         return (
             <TableView columns={columns} verboseToolbar={true} dataSource={data}>
-                <InsertTableAction onInsert= {item => item } buttonProps={{ type: 'primary', shape: 'round'}}/>
+                <InsertTableAction text={'Create'}
+                                   icon={'plus-circle'}
+                                   onInsert= {item => item } buttonProps={{ type: 'primary', shape: 'round'}}/>
                 <UpdateTableAction onUpdate= {item => item } buttonProps={{ type: 'dashed' }}/>
                 <RemoveTableAction onRemove= {() => true }   buttonProps={{ type: 'danger' }} />
             </TableView>

@@ -7,7 +7,6 @@ export interface DomainEntity {
 }
 
 export interface TableViewProps<T extends DomainEntity>  {
-
     columns?: ColumnProps<T>[];
     title?: string;
     verboseToolbar?: boolean;
@@ -15,15 +14,10 @@ export interface TableViewProps<T extends DomainEntity>  {
     children?: ReactNode;
 }
 
-export interface TableViewState<T extends DomainEntity> {
-    verboseToolbar?: boolean;
+export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: string[] | number[];
-    dataSource: T[];
-}
-
-export interface TableViewContext<T extends DomainEntity> extends TableViewState<T> {
-    setSelectedRowKeys: ( selection: string[] | number[]) => void
-    setDataSource: ( data: T[]) => void
+    verboseToolbar?: boolean;
+    removeSelectedItem: () => void
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -31,24 +25,37 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]|number[]>([]);
-    const [verboseToolbar]= useState(props.verboseToolbar);
     const [dataSource, setDataSource]= useState(props.dataSource? props.dataSource: []);
+    const [verboseToolbar]= useState(props.verboseToolbar);
 
-    const setSelection = (selection: string[] | number[]) => {
+    function setSelection(selection: string[] | number[]) {
         console.log('selectedRowKeys changed: ', selection);
         setSelectedRowKeys(selection);
-    };
+    }
 
-    const selectRow = (row: T) => {
+    function selectRow(row: T) {
         setSelection([row.key]);
-    };
+    }
+
+    function removeSelectedItem() {
+        // console.log("Preparing to remove item with key=" + selectedRowKeys[0])
+        const item = dataSource.find(e => e.key === selectedRowKeys[0]);
+        // console.log("item = " + item)
+
+        if (item) {
+            // console.log("Removing item with key=" + item.key)
+            const itemIndex = dataSource.indexOf(item);
+            let data = dataSource; // should the data be copied?
+            data.splice(itemIndex, 1);
+            setDataSource(data);
+            setSelectedRowKeys([]);
+        }
+    }
 
     const context = {
         selectedRowKeys: selectedRowKeys,
         verboseToolbar: verboseToolbar,
-        dataSource: dataSource,
-        setSelectedRowKeys: setSelectedRowKeys,
-        setDataSource: setDataSource,
+        removeSelectedItem: removeSelectedItem,
     };
 
     //TODO pass down table actionProps

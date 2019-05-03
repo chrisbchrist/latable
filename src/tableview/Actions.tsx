@@ -1,35 +1,48 @@
 import React, {useContext} from 'react';
-import {DomainEntity, TableViewContext} from "./TableView"
+import {DomainEntity, TableViewContext, TableViewState} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 
+interface TableActionConfig<T extends DomainEntity, P extends ActionButtonProps > {
+    props: P,
+    defaultText: string,
+    defaultIcon: string,
+    isValid: (ctx: TableViewState<T>)=>boolean,
+    doPerform: (props:P)=>void,
+}
+
+function TableAction<T extends DomainEntity, P extends ActionButtonProps >( config: TableActionConfig<T,P> ) {
+
+    const context = useContext(TableViewContext);
+    const { defaultText, defaultIcon, isValid, doPerform } = config;
+    const { text, icon, perform, ...otherProps } = config.props;
+
+    return (
+
+        <ActionButton
+            perform={() => perform? perform(): doPerform(config.props)}
+            text={text ? text : defaultText}
+            icon={icon ? icon : defaultIcon}
+            verbose={context.verboseToolbar}
+            disabled={!isValid(context)}
+            {...otherProps}
+        />
+
+    );
+
+}
 
 export interface InsertTableActionProps<T extends DomainEntity> extends ActionButtonProps {
     onInsert: (item: T) => T
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
-
-    const {verboseToolbar }= useContext(TableViewContext);
-
-    const { text, icon, description, ...otherProps } = props;
-
-    const perform = () => {
-        //TODO use props.onInsert here
-    };
-
-    return (
-
-        <ActionButton
-            perform={() => perform}
-            text={text ? text : "Insert"}
-            icon={icon ? icon : "plus"}
-            verbose={verboseToolbar}
-            disabled={false}
-            description={description ? description : "Insert Item"}
-            {...otherProps}
-        />
-
-    );
+    return TableAction<T, InsertTableActionProps<T>>( {
+        props      : props,
+        defaultText: "Insert",
+        defaultIcon: "plus",
+        isValid    : () => true,
+        doPerform  : () => {},
+    });
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends ActionButtonProps {
@@ -38,24 +51,13 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends ActionBu
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
 
-    const {selectedRowKeys, verboseToolbar }= useContext(TableViewContext);
-    const { text, icon, description, ...otherProps } = props;
-
-    const perform = () => {
-        //TODO use props.onUpdate here
-    };
-
-    return (
-        <ActionButton
-            perform={() => perform}
-            text={text? text: "Edit"}
-            icon={icon? icon: "edit"}
-            verbose={verboseToolbar}
-            disabled={ selectedRowKeys.length != 1}
-            description={ description? description: "Edit Item"}
-            {... otherProps}
-        />
-    );
+    return TableAction<T, UpdateTableActionProps<T>>( {
+        props      : props,
+        defaultText: "Edit",
+        defaultIcon: "edit",
+        isValid    : context => context.selectedRowKeys.length == 1,
+        doPerform  : () => {},
+    });
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends ActionButtonProps {
@@ -64,22 +66,12 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends ActionBu
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
 
-    const {selectedRowKeys, verboseToolbar }= useContext(TableViewContext);
-    const { text, icon, description, ...otherProps } = props;
+    return TableAction<T, RemoveTableActionProps<T>>( {
+        props      : props,
+        defaultText: "Delete",
+        defaultIcon: "delete",
+        isValid    : context => context.selectedRowKeys.length == 1,
+        doPerform  : () => {},
+    });
 
-    const perform = () => {
-        //TODO use props.onUpdate here
-    };
-
-    return (
-        <ActionButton
-            perform={() => perform}
-            text={text? text: "Delete"}
-            icon={icon? icon: "delete"}
-            verbose={verboseToolbar}
-            disabled={ selectedRowKeys.length != 1}
-            description={ description? description: "Delete Item"}
-            {... otherProps}
-        />
-    );
 }

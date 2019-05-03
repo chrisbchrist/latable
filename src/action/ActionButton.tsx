@@ -16,9 +16,8 @@ export interface ActionButtonProps {
 
 export const ActionButton = (props: ActionButtonProps) => {
 
-    const {disabled, description, buttonProps, verbose, perform } = props;
+    const { icon, disabled, description, buttonProps, verbose, perform } = props;
     const text = props.text ? props.text : "???";
-    const icon = props.icon ? props.icon : "question";
 
     return (
         <Tooltip placement="bottom" title={description ? description : text}>

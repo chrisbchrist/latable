@@ -38,7 +38,7 @@ const columns = [{
 storiesOf('TableView', module)
 
 
-    .add(' - with standard toolbar', () => {
+    .add('with standard toolbar', () => {
         return <TableView columns={columns} >
                     <InsertTableAction onInsert= {item => item }/>
                     <UpdateTableAction onUpdate= {item => item }/>
@@ -46,7 +46,7 @@ storiesOf('TableView', module)
                </TableView>
     })
 
-    .add(' - with verbose toolbar', () => {
+    .add('with verbose toolbar', () => {
         return <TableView columns={columns} verboseToolbar={true}>
                     <InsertTableAction onInsert= {item => item }/>
                     <UpdateTableAction onUpdate= {item => item }/>
@@ -54,7 +54,7 @@ storiesOf('TableView', module)
               </TableView>
     })
 
-    .add(' - with custom toolbar button props', () => {
+    .add('with custom toolbar button props', () => {
 
         return (
             <TableView columns={columns} verboseToolbar={true}>

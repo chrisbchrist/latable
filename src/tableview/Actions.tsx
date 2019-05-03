@@ -2,26 +2,20 @@ import React, {useContext} from 'react';
 import {DomainEntity, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 
-interface TableActionConfig<T extends DomainEntity, P extends ActionButtonProps > {
-    props: P,
-    defaultText: string,
-    defaultIcon: string,
+interface TableActionConfig<T extends DomainEntity> extends ActionButtonProps {
     isValid: (ctx: TableViewContext<T>)=>boolean,
-    doPerform: (props:P, ctx: TableViewContext<T>)=>void,
+    doPerform: (ctx: TableViewContext<T>)=>void,
 }
 
-function TableAction<T extends DomainEntity, P extends ActionButtonProps >( config: TableActionConfig<T,P> ) {
+function TableAction<T extends DomainEntity, P extends ActionButtonProps >( config: TableActionConfig<T> ) {
 
     const context = useContext(TableViewContext);
-    const { defaultText, defaultIcon, isValid, doPerform } = config;
-    const { text, icon, perform, ...otherProps } = config.props;
+    const { perform, isValid, doPerform, ...otherProps } = config;
 
     return (
 
         <ActionButton
-            perform={() => perform? perform(): doPerform(config.props, context)}
-            text={text ? text : defaultText}
-            icon={icon ? icon : defaultIcon}
+            perform={() => perform? perform(): doPerform(context)}
             verbose={context.verboseToolbar}
             disabled={!isValid(context)}
             {...otherProps}
@@ -36,13 +30,14 @@ export interface InsertTableActionProps<T extends DomainEntity> extends ActionBu
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
-    return TableAction<T, InsertTableActionProps<T>>( {
-        props      : props,
-        defaultText: "Insert",
-        defaultIcon: "plus",
-        isValid    : () => true,
-        doPerform  : () => {},
-    });
+    return <TableAction
+               text = "Insert"
+               icon = "plus"
+               isValid = {() => true}
+               doPerform = {() => {}}
+               {...props}
+           />
+
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends ActionButtonProps {
@@ -51,13 +46,14 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends ActionBu
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
 
-    return TableAction<T, UpdateTableActionProps<T>>( {
-        props      : props,
-        defaultText: "Edit",
-        defaultIcon: "edit",
-        isValid    : context => context.selectedRowKeys.length == 1,
-        doPerform  : () => {},
-    });
+    return <TableAction
+        text = "Edit"
+        icon = "edit"
+        isValid = {context => context.selectedRowKeys.length == 1}
+        doPerform = {() => {}}
+        {...props}
+    />
+
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends ActionButtonProps {
@@ -66,29 +62,29 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends ActionBu
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
 
-    return TableAction<T, RemoveTableActionProps<T>>( {
-        props      : props,
-        defaultText: "Delete",
-        defaultIcon: "delete",
-        isValid    : context => context.selectedRowKeys.length == 1,
-        doPerform  : ( props, context) => {
+    return (
+        <TableAction
+        text="Delete"
+        icon="delete"
+        isValid={context => context.selectedRowKeys.length == 1}
+        {...props}
+        doPerform={(context) => {
 
-            const { selectedRowKeys, setSelectedRowKeys, dataSource, setDataSource } = context;
+            const {selectedRowKeys, setSelectedRowKeys, dataSource, setDataSource} = context;
             // console.log("Preparing to remove item with key=" + selectedRowKeys[0])
-            const item = context.dataSource.find( e => e.key === selectedRowKeys[0]);
+            const item = context.dataSource.find(e => e.key === selectedRowKeys[0]);
             // console.log("item = " + item)
 
-            if ( item ) {
+            if (item) {
                 // console.log("Removing item with key=" + item.key)
                 const itemIndex = dataSource.indexOf(item);
                 let data = dataSource; // should the data be copied?
-                data.splice( itemIndex, 1 );
+                data.splice(itemIndex, 1);
                 setDataSource(data);
                 setSelectedRowKeys([]);
             }
 
-
-        },
-    });
+        }}
+    />);
 
 }

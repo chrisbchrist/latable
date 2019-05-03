@@ -51,7 +51,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setDataSource: setDataSource,
     };
 
-    //TODO pass down table props
+    //TODO pass down table actionProps
     return (
         <TableViewContext.Provider value={context}>
             <Table

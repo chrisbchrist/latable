@@ -1,13 +1,13 @@
 import React, {useContext} from 'react';
-import {DomainEntity, TableViewContext, TableViewState} from "./TableView"
+import {DomainEntity, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 
 interface TableActionConfig<T extends DomainEntity, P extends ActionButtonProps > {
     props: P,
     defaultText: string,
     defaultIcon: string,
-    isValid: (ctx: TableViewState<T>)=>boolean,
-    doPerform: (props:P)=>void,
+    isValid: (ctx: TableViewContext<T>)=>boolean,
+    doPerform: (props:P, ctx: TableViewContext<T>)=>void,
 }
 
 function TableAction<T extends DomainEntity, P extends ActionButtonProps >( config: TableActionConfig<T,P> ) {
@@ -19,7 +19,7 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
     return (
 
         <ActionButton
-            perform={() => perform? perform(): doPerform(config.props)}
+            perform={() => perform? perform(): doPerform(config.props, context)}
             text={text ? text : defaultText}
             icon={icon ? icon : defaultIcon}
             verbose={context.verboseToolbar}
@@ -71,7 +71,24 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
         defaultText: "Delete",
         defaultIcon: "delete",
         isValid    : context => context.selectedRowKeys.length == 1,
-        doPerform  : () => {},
+        doPerform  : ( props, context) => {
+
+            const { selectedRowKeys, setSelectedRowKeys, dataSource, setDataSource } = context;
+            // console.log("Preparing to remove item with key=" + selectedRowKeys[0])
+            const item = context.dataSource.find( e => e.key === selectedRowKeys[0]);
+            // console.log("item = " + item)
+
+            if ( item ) {
+                // console.log("Removing item with key=" + item.key)
+                const itemIndex = dataSource.indexOf(item);
+                let data = dataSource; // should the data be copied?
+                data.splice( itemIndex, 1 );
+                setDataSource(data);
+                setSelectedRowKeys([]);
+            }
+
+
+        },
     });
 
 }

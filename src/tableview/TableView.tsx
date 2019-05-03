@@ -16,17 +16,23 @@ export interface TableViewProps<T extends DomainEntity>  {
 }
 
 export interface TableViewState<T extends DomainEntity> {
-    verboseToolbar?: boolean
+    verboseToolbar?: boolean;
     selectedRowKeys: string[] | number[];
+    dataSource: T[];
+}
+
+export interface TableViewContext<T extends DomainEntity> extends TableViewState<T> {
+    setSelectedRowKeys: ( selection: string[] | number[]) => void
+    setDataSource: ( data: T[]) => void
 }
 
 export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-//    const [state, setState] = useState<TableViewState<T>>({ selectedRowKeys:[], verboseToolbar: props.verboseToolbar});
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]|number[]>([]);
     const [verboseToolbar]= useState(props.verboseToolbar);
+    const [dataSource, setDataSource]= useState(props.dataSource? props.dataSource: []);
 
     const setSelection = (selection: string[] | number[]) => {
         console.log('selectedRowKeys changed: ', selection);
@@ -37,7 +43,13 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setSelection([row.key]);
     };
 
-    const context = { selectedRowKeys: selectedRowKeys, verboseToolbar: verboseToolbar};
+    const context = {
+        selectedRowKeys: selectedRowKeys,
+        verboseToolbar: verboseToolbar,
+        dataSource: dataSource,
+        setSelectedRowKeys: setSelectedRowKeys,
+        setDataSource: setDataSource,
+    };
 
     //TODO pass down table props
     return (

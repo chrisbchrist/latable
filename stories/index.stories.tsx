@@ -25,9 +25,9 @@ const columns = [{
 const data = [
     {
         key:  "1",
-        firstName: "Eugene",
-        lastName: "Ryzhikov",
-        age :"52"
+        firstName: "Jason",
+        lastName: "Rocco",
+        age :"47"
     },
     {
         key: "2",

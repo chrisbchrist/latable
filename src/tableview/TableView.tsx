@@ -1,10 +1,7 @@
 import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {ColumnProps} from 'antd/lib/table';
-
-export interface DomainEntity {
-    key: string
-}
+import {DomainEntity} from "../domain/Domain";
 
 export interface TableViewProps<T extends DomainEntity>  {
     columns?: ColumnProps<T>[];
@@ -14,11 +11,15 @@ export interface TableViewProps<T extends DomainEntity>  {
     children?: ReactNode;
 }
 
+export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
+export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefined;
+export type OnRemoveCallback<T extends DomainEntity> = (item: T)  => boolean;
+
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: string[] | number[];
     verboseToolbar?: boolean;
-    insertSelectedItem: (onInsert: (item?: T) => T | undefined) => void
-    updateSelectedItem: (onUpdate: (item: T) => T | undefined) => void
+    insertSelectedItem: (onInsert: OnInsertCallback<T>) => void
+    updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void
     removeSelectedItem: () => void
 }
 
@@ -39,7 +40,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setSelection([row.key]);
     }
 
-    function insertSelectedItem( onInsert: (item?: T) => T | undefined) {
+    function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
         const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
         const insertedItem = onInsert(selectedItem);
         if ( insertedItem ) {
@@ -50,7 +51,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
-    function updateSelectedItem( onUpdate: (item: T) => T | undefined) {
+    function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
         const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
         if (selectedItem) {
             const selectedIndex = selectedRowKeys.length == 0 ? -1 : dataSource.indexOf(selectedItem);

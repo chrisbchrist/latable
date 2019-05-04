@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
-import {DomainEntity, TableViewContext} from "./TableView"
+import {OnInsertCallback, OnRemoveCallback, OnUpdateCallback, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
+import {DomainEntity} from "../domain/Domain";
 
 interface TableActionConfig<T extends DomainEntity> extends ActionButtonProps {
     isValid: (ctx: TableViewContext<T>)=>boolean,
@@ -26,7 +27,7 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
 }
 
 export interface InsertTableActionProps<T extends DomainEntity> extends ActionButtonProps {
-    onInsert: (item?: T) => T | undefined
+    onInsert: OnInsertCallback<T>
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
@@ -35,14 +36,14 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
             text="Insert"
             icon="plus"
             isValid={() => true}
-            doPerform={ctx => ctx.insertSelectedItem(item => props.onInsert(item))}
+            doPerform={ctx => ctx.insertSelectedItem( item => props.onInsert(item))}
             {...props}
         />
     );
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends ActionButtonProps {
-    onUpdate: (item: T) => T | undefined
+    onUpdate: OnUpdateCallback<T>
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
@@ -60,7 +61,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends ActionButtonProps {
-    onRemove: (item: T) => boolean
+    onRemove: OnRemoveCallback<T>
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {

@@ -72,7 +72,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
             icon="delete"
             {...props}
             isValid   = { ctx => ctx.selectedRowKeys.length == 1 }
-            doPerform = { ctx => ctx.removeSelectedItem( ( item, success) => props.onRemove(item, success)) }
+            doPerform = { ctx => ctx.removeSelectedItem( ( item, onComplete) => props.onRemove(item, onComplete)) }
         />
     );
 

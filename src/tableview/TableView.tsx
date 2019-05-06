@@ -14,10 +14,13 @@ export interface TableViewProps<T extends DomainEntity>  {
 
 export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
 export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefined;
-export type OnRemoveCallback<T extends DomainEntity> = (item: T, onCompletion: (success: boolean)=>void )  => void;
+export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete: (success: boolean)=>void )  => void;
+
+export type Keys = string[] | number[];
+export type Key  = string & number;
 
 export interface TableViewContext<T extends DomainEntity> {
-    selectedRowKeys: string[] | number[];
+    selectedRowKeys: Keys;
     verboseToolbar?: boolean;
     insertSelectedItem: (onInsert: OnInsertCallback<T>) => void
     updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void
@@ -28,21 +31,19 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]|number[]>([]);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [dataSource, setDataSource]= useState(props.dataSource? props.dataSource: []);
     const [verboseToolbar]= useState(props.verboseToolbar);
 
-    function setSelection(selection: string[] | number[]) {
-        console.log('selection updated: ', selection);
-        setSelectedRowKeys(selection);
-    }
+    const selectionModel = props.multipleSelection?
+        new MultipleSelectionModel( selectedRowKeys, setSelectedRowKeys):
+        new SingleSelectionModel( selectedRowKeys, setSelectedRowKeys);
 
-    function selectRow(row: T) {
-        setSelection(row? [row.key]: []);
-    }
-
-    function isSelectionEmpty() {
-       return selectedRowKeys === undefined || selectedRowKeys.length == 0;
+    function selectRow(row?: T) {
+        let selection = row? row.key: undefined;
+        if ( selection ) {
+            selectionModel.toggle(selection as Key)
+        }
     }
 
     function getItemByKey( key: string | number ): T | undefined {
@@ -50,7 +51,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
-        const selectedItem = isSelectionEmpty()? undefined: getItemByKey(selectedRowKeys[0]);
+        const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0]);
         const insertedItem = onInsert(selectedItem);
         if ( insertedItem ) {
             setDataSource([...dataSource, insertedItem]);
@@ -59,7 +60,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
-        if ( isSelectionEmpty() ) return;
+        if ( selectionModel.isEmpty()) return;
         let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( selectedIndex >= 0 ) {
             const updatedItem = onUpdate(dataSource[selectedIndex]);
@@ -74,7 +75,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function removeSelectedItem( onRemove: OnRemoveCallback<T> ) {
 
-        if ( isSelectionEmpty() ) return;
+        if ( selectionModel.isEmpty() ) return;
 
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
@@ -121,11 +122,11 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
                     type: props.multipleSelection ? 'checkbox': 'radio',
-                    onChange: setSelection
+                    onChange: (keys) => selectionModel.set(keys)
                 }}
                 onRow={(record) => ({
                     //FIXME take selection type in consideration
-                    onClick: () => isSelectionEmpty()? selectRow(record): setSelection([]) ,
+                    onClick: () => selectRow(record),
                 })}
             />
         </TableViewContext.Provider>
@@ -134,3 +135,77 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 }
 
 export default TableView;
+
+interface SelectionModel {
+
+    isEmpty(): boolean
+    clear(): void
+    contains(test: Key): boolean
+    get(): Keys
+    set(newSelection: Keys): void
+    add(newSelection: Keys): void
+    remove(selection: Keys): void
+
+}
+
+
+
+class MultipleSelectionModel implements SelectionModel {
+
+    constructor( protected current: Keys, protected setter: (s: Keys) => void ){}
+
+    isEmpty(): boolean  {
+        return this.current.length == 0;
+    }
+
+    contains(key: Key): boolean {
+        return this.current.indexOf(key) >= 0;
+    }
+
+    get(): Keys {
+        return this.current
+    }
+
+    clear(): void {
+        this.setter([])
+    }
+
+    set(newSelection: Keys): void {
+        this.setter( newSelection )
+    }
+
+    add(newSelection: Keys): void {
+        this.setter( ([...this.current, ...newSelection]) as Keys)
+    }
+
+    remove(selection: Keys): void {
+        let data = [...this.current];
+        this.setter( (data.filter( e => selection.indexOf(e as Key) < 0)) as Keys )
+    }
+
+    toggle( key: Key) {
+        if (this.contains(key)) {
+            this.remove([key])
+        } else {
+            this.add([key])
+        }
+    }
+
+}
+
+
+class SingleSelectionModel extends MultipleSelectionModel {
+
+    constructor( current: Keys, setter: (s: Keys) => void ){
+        super(current, setter)
+    }
+
+    set(newSelection: Keys): void {
+        this.setter( (newSelection && newSelection.length > 0? [newSelection[0]]: []) as Keys )
+    }
+
+    add(newSelection: Keys): void {
+        this.set(newSelection)
+    }
+
+}

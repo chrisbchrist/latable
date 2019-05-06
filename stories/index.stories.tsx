@@ -110,4 +110,16 @@ storiesOf('TableView', module)
             </TableView>
         )
 
-    });
+    })
+
+    .add('with multiple row selection', () => {
+        return (
+            <TableView columns={columns} dataSource={data} multipleSelection={true}>
+                <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
+                <UpdateTableAction onUpdate={item => item}/>
+                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+            </TableView>
+        )
+    })
+
+;

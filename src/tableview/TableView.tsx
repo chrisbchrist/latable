@@ -3,16 +3,11 @@ import {Table} from 'antd';
 import {ColumnProps} from 'antd/lib/table';
 import {DomainEntity} from "../domain/Domain";
 
-enum TableViewSelectionType {
-    SingleSelection,
-    MutipleSelection,
-}
-
 export interface TableViewProps<T extends DomainEntity>  {
     columns?: ColumnProps<T>[];
     title?: string;
     verboseToolbar?: boolean;
-    selectionType: TableViewSelectionType;
+    multipleSelection: boolean;
     dataSource?: T[];
     children?: ReactNode;
 }
@@ -38,7 +33,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [verboseToolbar]= useState(props.verboseToolbar);
 
     function setSelection(selection: string[] | number[]) {
-        console.log('selectedRowKeys changed: ', selection);
+        console.log('selection updated: ', selection);
         setSelectedRowKeys(selection);
     }
 
@@ -83,19 +78,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
-            // use callback here with dataSource[itemIndex]
+
             let data = [...dataSource];
             data.splice(itemIndex, 1);
             setDataSource(data);
 
+            // calculate appropriate selection index
+            itemIndex = itemIndex >= data.length? itemIndex-1: itemIndex;
+            let selection = itemIndex < 0 || data.length == 0 ? []: [data[itemIndex].key];
+            setSelectedRowKeys(selection);
 
-            if ( itemIndex == 0 && dataSource.length == 0 ) {
-                itemIndex = -1;
-            } else if ( itemIndex == 0 && itemIndex < dataSource.length ) {
-                itemIndex--
-            }
-            let selection = itemIndex < 0? []: [dataSource[itemIndex].key];
-            setSelectedRowKeys(selection );
         }
     }
 
@@ -124,9 +116,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 dataSource={dataSource}
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
+                    type: props.multipleSelection ? 'checkbox': 'radio',
                     onChange: setSelection
                 }}
-                onRow={record => ({
+                onRow={(record,index) => ({
                     onClick: () => selectRow(record),
                 })}
             />

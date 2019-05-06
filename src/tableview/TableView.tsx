@@ -40,19 +40,24 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setSelection([row.key]);
     }
 
+    function getItemByKey( key: string | number ): T | undefined {
+        return dataSource.find(e => e.key == key);
+    }
+
     function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
-        const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
+        const selectedItem = selectedRowKeys.length == 0? undefined: getItemByKey(selectedRowKeys[0]);
         const insertedItem = onInsert(selectedItem);
         if ( insertedItem ) {
-            let data = [...dataSource];
-            data.push(insertedItem);
-            setDataSource(data);
+            dataSource.push(insertedItem)
+            // setDataSource(dataSource)
+            console.log(dataSource)
             selectRow(insertedItem)
         }
     }
 
     function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
-        const selectedItem = selectedRowKeys.length == 0? undefined: dataSource.find(e => e.key === selectedRowKeys[0]);
+        //TODO find index first for faster search
+        const selectedItem = selectedRowKeys.length == 0? undefined: getItemByKey(selectedRowKeys[0]);
         if (selectedItem) {
             const selectedIndex = selectedRowKeys.length == 0 ? -1 : dataSource.indexOf(selectedItem);
             const updatedItem = onUpdate(selectedItem);
@@ -94,6 +99,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
             <Table
                 columns={props.columns}
                 bordered
+                pagination={false}
                 //loading={true}
                 title={() =>
                     <div>

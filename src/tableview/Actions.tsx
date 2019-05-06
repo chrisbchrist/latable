@@ -67,12 +67,12 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends ActionBu
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
 
     return (
-        <TableAction
+        <TableAction<T, UpdateTableActionProps<T>>
             text="Delete"
             icon="delete"
             {...props}
-            isValid   ={ ctx => ctx.selectedRowKeys.length == 1 }
-            doPerform ={ ctx => ctx.removeSelectedItem() }
+            isValid   = { ctx => ctx.selectedRowKeys.length == 1 }
+            doPerform = { ctx => ctx.removeSelectedItem( ( item, success) => props.onRemove(item, success)) }
         />
     );
 

@@ -7,21 +7,21 @@ export interface TableViewProps<T extends DomainEntity>  {
     columns?: ColumnProps<T>[];
     title?: string;
     verboseToolbar?: boolean;
-    multipleSelection: boolean;
+    multipleSelection?: boolean;
     dataSource?: T[];
     children?: ReactNode;
 }
 
 export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
 export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefined;
-export type OnRemoveCallback<T extends DomainEntity> = (item: T)  => boolean;
+export type OnRemoveCallback<T extends DomainEntity> = (item: T, onCompletion: (success: boolean)=>void )  => void;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: string[] | number[];
     verboseToolbar?: boolean;
     insertSelectedItem: (onInsert: OnInsertCallback<T>) => void
     updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void
-    removeSelectedItem: () => void
+    removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -38,7 +38,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     function selectRow(row: T) {
-        setSelection([row.key]);
+        setSelection(row? [row.key]: []);
     }
 
     function isSelectionEmpty() {
@@ -72,21 +72,25 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
-    function removeSelectedItem() {
+    function removeSelectedItem( onRemove: OnRemoveCallback<T> ) {
 
         if ( isSelectionEmpty() ) return;
 
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
-            let data = [...dataSource];
-            data.splice(itemIndex, 1);
-            setDataSource(data);
+            onRemove( dataSource[itemIndex], ( success) => {
+                if ( success) {
+                    let data = [...dataSource];
+                    data.splice(itemIndex, 1);
+                    setDataSource(data);
 
-            // calculate appropriate selection index
-            itemIndex = itemIndex >= data.length? itemIndex-1: itemIndex;
-            let selection = itemIndex < 0 || data.length == 0 ? []: [data[itemIndex].key];
-            setSelectedRowKeys(selection);
+                    // calculate appropriate selection index
+                    itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
+                    let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
+                    setSelectedRowKeys(selection);
+                }
+            });
 
         }
     }
@@ -119,8 +123,9 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     type: props.multipleSelection ? 'checkbox': 'radio',
                     onChange: setSelection
                 }}
-                onRow={(record,index) => ({
-                    onClick: () => selectRow(record),
+                onRow={(record) => ({
+                    //FIXME take selection type in consideration
+                    onClick: () => isSelectionEmpty()? selectRow(record): setSelection([]) ,
                 })}
             />
         </TableViewContext.Provider>

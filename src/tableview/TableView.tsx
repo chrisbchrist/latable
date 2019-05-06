@@ -3,10 +3,16 @@ import {Table} from 'antd';
 import {ColumnProps} from 'antd/lib/table';
 import {DomainEntity} from "../domain/Domain";
 
+enum TableViewSelectionType {
+    SingleSelection,
+    MutipleSelection,
+}
+
 export interface TableViewProps<T extends DomainEntity>  {
     columns?: ColumnProps<T>[];
     title?: string;
     verboseToolbar?: boolean;
+    selectionType: TableViewSelectionType;
     dataSource?: T[];
     children?: ReactNode;
 }
@@ -40,48 +46,56 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         setSelection([row.key]);
     }
 
+    function isSelectionEmpty() {
+       return selectedRowKeys === undefined || selectedRowKeys.length == 0;
+    }
+
     function getItemByKey( key: string | number ): T | undefined {
         return dataSource.find(e => e.key == key);
     }
 
     function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
-        const selectedItem = selectedRowKeys.length == 0? undefined: getItemByKey(selectedRowKeys[0]);
+        const selectedItem = isSelectionEmpty()? undefined: getItemByKey(selectedRowKeys[0]);
         const insertedItem = onInsert(selectedItem);
         if ( insertedItem ) {
-            dataSource.push(insertedItem)
-            // setDataSource(dataSource)
-            console.log(dataSource)
+            setDataSource([...dataSource, insertedItem]);
             selectRow(insertedItem)
         }
     }
 
     function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
-        //TODO find index first for faster search
-        const selectedItem = selectedRowKeys.length == 0? undefined: getItemByKey(selectedRowKeys[0]);
-        if (selectedItem) {
-            const selectedIndex = selectedRowKeys.length == 0 ? -1 : dataSource.indexOf(selectedItem);
-            const updatedItem = onUpdate(selectedItem);
+        if ( isSelectionEmpty() ) return;
+        let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
+        if ( selectedIndex >= 0 ) {
+            const updatedItem = onUpdate(dataSource[selectedIndex]);
             if (updatedItem) {
                 let data = [...dataSource];
                 data[selectedIndex] = updatedItem;
                 setDataSource(data);
-                selectRow(updatedItem)
+                selectRow(updatedItem);
             }
         }
     }
 
     function removeSelectedItem() {
-        // console.log("Preparing to remove item with key=" + selectedRowKeys[0])
-        const item = dataSource.find(e => e.key === selectedRowKeys[0]);
-        // console.log("item = " + item)
 
-        if (item) {
-            // console.log("Removing item with key=" + item.key)
-            const itemIndex = dataSource.indexOf(item);
-            let data = dataSource; // should the data be copied?
+        if ( isSelectionEmpty() ) return;
+
+        let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
+        if ( itemIndex >= 0 ) {
+            // use callback here with dataSource[itemIndex]
+            let data = [...dataSource];
             data.splice(itemIndex, 1);
             setDataSource(data);
-            setSelectedRowKeys([]);
+
+
+            if ( itemIndex == 0 && dataSource.length == 0 ) {
+                itemIndex = -1;
+            } else if ( itemIndex == 0 && itemIndex < dataSource.length ) {
+                itemIndex--
+            }
+            let selection = itemIndex < 0? []: [dataSource[itemIndex].key];
+            setSelectedRowKeys(selection );
         }
     }
 
@@ -107,7 +121,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                         {props.children}
                     </div>
                 }
-                dataSource={props.dataSource}
+                dataSource={dataSource}
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
                     onChange: setSelection

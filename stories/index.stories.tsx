@@ -106,7 +106,7 @@ storiesOf('TableView', module)
                                    buttonProps={{ type: 'primary', shape: 'round'}}
                                    onInsert= {item => {return { ...item, key: uuid4()}} } />
                 <UpdateTableAction onUpdate= {item => item } buttonProps={{ type: 'dashed' }}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) } />
+                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) } buttonProps={{ type: 'danger' }}/>
             </TableView>
         )
 

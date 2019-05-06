@@ -1,7 +1,8 @@
 import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {ColumnProps} from 'antd/lib/table';
-import {DomainEntity} from "../domain/Domain";
+import {DomainEntity, Key} from "../domain/Domain";
+import SelectionModel, {getSelectionModel} from "./SelectionModel";
 
 export interface TableViewProps<T extends DomainEntity>  {
     columns?: ColumnProps<T>[];
@@ -17,7 +18,6 @@ export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefin
 export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete: (success: boolean)=>void )  => void;
 
 export type Keys = string[] | number[];
-export type Key  = string & number;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -31,27 +31,26 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
-    const [dataSource, setDataSource]= useState(props.dataSource? props.dataSource: []);
-    const [verboseToolbar]= useState(props.verboseToolbar);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([] as Keys);
+    const [dataSource, setDataSource]           = useState<T[]>(props.dataSource? props.dataSource: []);
+    const [verboseToolbar]                      = useState(props.verboseToolbar);
 
-    const selectionModel = props.multipleSelection?
-        new MultipleSelectionModel( selectedRowKeys, setSelectedRowKeys):
-        new SingleSelectionModel( selectedRowKeys, setSelectedRowKeys);
+    const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
+        props.multipleSelection != undefined && props.multipleSelection, selectedRowKeys as Key[], setSelectedRowKeys)
 
     function selectRow(row?: T) {
         let selection = row? row.key: undefined;
         if ( selection ) {
-            selectionModel.toggle(selection as Key)
+            selectionModel.toggle(selection)
         }
     }
 
-    function getItemByKey( key: string | number ): T | undefined {
+    function getItemByKey( key: Key): T | undefined {
         return dataSource.find(e => e.key == key);
     }
 
     function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
-        const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0]);
+        const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0] as Key);
         const insertedItem = onInsert(selectedItem);
         if ( insertedItem ) {
             setDataSource([...dataSource, insertedItem]);
@@ -122,7 +121,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
                     type: props.multipleSelection ? 'checkbox': 'radio',
-                    onChange: (keys) => selectionModel.set(keys)
+                    onChange: (keys) => selectionModel.set(keys as Key[])
                 }}
                 onRow={(record) => ({
                     //FIXME take selection type in consideration
@@ -135,77 +134,3 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 }
 
 export default TableView;
-
-interface SelectionModel {
-
-    isEmpty(): boolean
-    clear(): void
-    contains(test: Key): boolean
-    get(): Keys
-    set(newSelection: Keys): void
-    add(newSelection: Keys): void
-    remove(selection: Keys): void
-
-}
-
-
-
-class MultipleSelectionModel implements SelectionModel {
-
-    constructor( protected current: Keys, protected setter: (s: Keys) => void ){}
-
-    isEmpty(): boolean  {
-        return this.current.length == 0;
-    }
-
-    contains(key: Key): boolean {
-        return this.current.indexOf(key) >= 0;
-    }
-
-    get(): Keys {
-        return this.current
-    }
-
-    clear(): void {
-        this.setter([])
-    }
-
-    set(newSelection: Keys): void {
-        this.setter( newSelection )
-    }
-
-    add(newSelection: Keys): void {
-        this.setter( ([...this.current, ...newSelection]) as Keys)
-    }
-
-    remove(selection: Keys): void {
-        let data = [...this.current];
-        this.setter( (data.filter( e => selection.indexOf(e as Key) < 0)) as Keys )
-    }
-
-    toggle( key: Key) {
-        if (this.contains(key)) {
-            this.remove([key])
-        } else {
-            this.add([key])
-        }
-    }
-
-}
-
-
-class SingleSelectionModel extends MultipleSelectionModel {
-
-    constructor( current: Keys, setter: (s: Keys) => void ){
-        super(current, setter)
-    }
-
-    set(newSelection: Keys): void {
-        this.setter( (newSelection && newSelection.length > 0? [newSelection[0]]: []) as Keys )
-    }
-
-    add(newSelection: Keys): void {
-        this.set(newSelection)
-    }
-
-}

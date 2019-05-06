@@ -1,5 +1,5 @@
-// export type Key = string
+export type Key = string & number
 
 export interface DomainEntity {
-    key: string
+    key: Key
 }

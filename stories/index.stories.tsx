@@ -1,18 +1,13 @@
 import React from 'react';
 
 import {storiesOf} from '@storybook/react';
-// import {linkTo} from '@storybook/addon-links';
-
-
-import TableView, {OnInsertCallback} from '../src/tableview/TableView';
-import {InsertTableAction,
-        RefreshTableAction,
-        RemoveTableAction,
-        UpdateTableAction} from "../src/tableview/Actions";
+import TableView from '../src/tableview/TableView';
+import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
 import {Divider, Modal} from "antd";
 import {DomainEntity} from "../src/domain/Domain";
+// import {linkTo} from '@storybook/addon-links';
 const uuid4 = require('uuid/v4');
 
 const columns = [{
@@ -29,24 +24,29 @@ const columns = [{
     key: 'age',
 }];
 
+function age( bd: Date ): number {
+    var diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
+    return Math.abs(Math.floor(diff/365.25));
+}
+
 const data = [
     {
         key:  uuid4(),
         firstName: "Jason",
         lastName: "Rocco",
-        age :47
+        age : age( new Date(1971, 9, 15))
     },
     {
         key: uuid4(),
         firstName: "Roman",
         lastName: "Vorobiev",
-        age :52
+        age : age( new Date(1966, 7, 7))
     },
     {
         key: uuid4(),
         firstName: "Vladimir",
         lastName: "Birbrier",
-        age :40
+        age : age( new Date(1978, 9, 15))
     },
 
 ];
@@ -87,7 +87,7 @@ storiesOf('TableView', module)
             <TableView columns={columns} loadData={getData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
+                <InsertTableAction onInsert={item => {return {...item, key: uuid4()} as DomainEntity}}/>
                 <UpdateTableAction onUpdate={item => item}/>
                 <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
             </TableView>

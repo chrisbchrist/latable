@@ -35,9 +35,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([] as Keys);
     const [dataSource, setDataSource]           = useState<T[]>(props.dataSource? props.dataSource(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
+    const [loading, setLoading]                 = useState(false);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
-        props.multipleSelection != undefined && props.multipleSelection, selectedRowKeys as Key[], setSelectedRowKeys)
+        props.multipleSelection != undefined && props.multipleSelection, selectedRowKeys as Key[], setSelectedRowKeys);
 
     function selectRow(row?: T) {
         let selection = row? row.key: undefined;
@@ -52,7 +53,12 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function refreshData() {
         if ( props.dataSource ) {
-            setDataSource(props.dataSource())
+            try {
+                setLoading(true);
+                setDataSource(props.dataSource());
+            } finally {
+                setLoading(false);
+            }
         }
     }
 
@@ -118,7 +124,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 columns={props.columns}
                 bordered
                 pagination={false}
-                //loading={true}
+                loading={loading}
                 title={() =>
                     <div>
                         {props.title}

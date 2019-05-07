@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, Icon, Tooltip} from 'antd';
 
 import {BaseButtonProps} from "antd/es/button/button";
+import {IconProps} from "antd/es/icon";
 
 export interface ActionButtonProps {
     text?: string;
@@ -9,6 +10,7 @@ export interface ActionButtonProps {
     icon?: string;
     disabled?: boolean;
     buttonProps?: BaseButtonProps;
+    iconProps?: IconProps;
     verbose?: boolean,
     perform? :() => void
 }
@@ -16,7 +18,7 @@ export interface ActionButtonProps {
 
 export const ActionButton = (props: ActionButtonProps) => {
 
-    const { icon, disabled, description, buttonProps, verbose, perform } = props;
+    const { icon, disabled, description, buttonProps, iconProps, verbose, perform } = props;
     const text = props.text ? props.text : "???";
 
     return (
@@ -25,12 +27,12 @@ export const ActionButton = (props: ActionButtonProps) => {
                     disabled={disabled}
                     {...buttonProps}
                     onClick={() => { if (perform) perform() }} >
-                {icon ? <Icon type={icon}/> : null}
+                {icon ? <Icon {...iconProps} type={icon}/> : null}
                 {verbose ? text : null}
             </Button>
         </Tooltip>
     );
 };
 
-export default ActionButton;
+export default React.memo(ActionButton);
 

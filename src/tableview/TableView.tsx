@@ -1,16 +1,13 @@
-import React, {ReactNode, useState} from 'react';
+import React, {useState} from 'react';
 import {Table} from 'antd';
-import {ColumnProps} from 'antd/lib/table';
 import {DomainEntity, Key} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
+import {TableProps} from "antd/es/table";
 
-export interface TableViewProps<T extends DomainEntity>  {
-    columns?: ColumnProps<T>[];
-    title?: string;
-    verboseToolbar?: boolean;
-    multipleSelection?: boolean;
-    dataSource?: () => T[];
-    children?: ReactNode;
+export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
+    verboseToolbar?: boolean;     // show titles of the action buttons
+    multipleSelection?: boolean;  // allow mutiple selection
+    loadData?: () => T[];         // function to load data into the table
 }
 
 export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
@@ -22,7 +19,7 @@ export type Keys = string[] | number[];
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
-    refreshData: () => void;
+    loadData: () => void;
     insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
     updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
     removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;
@@ -33,12 +30,13 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([] as Keys);
-    const [dataSource, setDataSource]           = useState<T[]>(props.dataSource? props.dataSource(): []);
+    const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
     const [loading, setLoading]                 = useState(false);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
-        props.multipleSelection != undefined && props.multipleSelection, selectedRowKeys as Key[], setSelectedRowKeys);
+        props.multipleSelection != undefined && props.multipleSelection,
+        selectedRowKeys as Key[], setSelectedRowKeys);
 
     function selectRow(row?: T) {
         let selection = row? row.key: undefined;
@@ -52,10 +50,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     function refreshData() {
-        if ( props.dataSource ) {
+        if ( props.loadData ) {
             try {
                 setLoading(true);
-                setDataSource(props.dataSource());
+                setDataSource(props.loadData());
             } finally {
                 setLoading(false);
             }
@@ -119,10 +117,11 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     //TODO pass down table actionProps
     return (
+
         <TableViewContext.Provider value={context}>
             <Table
+                {... props}
                 columns={props.columns}
-                bordered
                 pagination={false}
                 loading={loading}
                 title={() =>
@@ -138,7 +137,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     onChange: (keys) => selectionModel.set(keys as Key[])
                 }}
                 onRow={(record) => ({
-                    //FIXME take selection type in consideration
                     onClick: () => selectRow(record),
                 })}
             />

@@ -4,7 +4,7 @@ import {storiesOf} from '@storybook/react';
 // import {linkTo} from '@storybook/addon-links';
 
 
-import TableView from '../src/tableview/TableView';
+import TableView, {OnInsertCallback} from '../src/tableview/TableView';
 import {InsertTableAction,
         RefreshTableAction,
         RemoveTableAction,
@@ -51,7 +51,6 @@ const data = [
 
 ];
 
-
 // storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
 // storiesOf('Button', module)
@@ -85,7 +84,7 @@ storiesOf('TableView', module)
 
     .add('with standard toolbar', () => {
         return (
-            <TableView columns={columns} dataSource={getData}>
+            <TableView columns={columns} loadData={getData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
@@ -97,7 +96,7 @@ storiesOf('TableView', module)
 
     .add('with verbose toolbar', () => {
         return (
-            <TableView columns={columns} verboseToolbar={true} dataSource={getData}>
+            <TableView columns={columns} verboseToolbar={true} loadData={getData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
@@ -110,7 +109,9 @@ storiesOf('TableView', module)
     .add('with custom toolbar button properties', () => {
 
         return (
-            <TableView columns={columns} verboseToolbar={true} dataSource={getData}>
+            <TableView columns={columns}
+                       verboseToolbar={true}
+                       loadData={getData} >
                 <RefreshTableAction iconProps={{spin:true}}/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
@@ -125,9 +126,25 @@ storiesOf('TableView', module)
 
     })
 
+    .add('with custom table properties', () => {
+
+        return (
+            <TableView columns={columns}
+                       bordered
+                       loadData={getData} >
+                <RefreshTableAction />
+                <Divider type="vertical" dashed={true}/>
+                <InsertTableAction onInsert= {item => {return { ...item, key: uuid4()}} } />
+                <UpdateTableAction onUpdate= {item => item } />
+                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) } />
+            </TableView>
+        )
+
+    })
+
     .add('with multiple row selection', () => {
         return (
-            <TableView columns={columns} dataSource={getData} multipleSelection={true}>
+            <TableView columns={columns} loadData={getData} multipleSelection={true}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>

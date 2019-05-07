@@ -32,7 +32,7 @@ export function RefreshTableAction<T extends DomainEntity>(props: ActionButtonPr
             text="Refresh"
             icon="sync"
             isValid={() => true}
-            doPerform={ctx => ctx.refreshData()}
+            doPerform={ctx => ctx.loadData()}
             {...props}
         />
     );

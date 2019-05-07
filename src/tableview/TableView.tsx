@@ -19,7 +19,7 @@ export type Keys = string[] | number[];
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
-    loadData: () => void;
+    refreshData: () => void;
     insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
     updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
     removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;

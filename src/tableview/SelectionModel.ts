@@ -1,27 +1,25 @@
-import {Key} from "../domain/Domain";
-
 export default interface SelectionModel<T> {
 
     isEmpty(): boolean
     clear(): void
     contains(test: T): boolean
     get(): T[]
-    set(newSelection: T[]): void
-    add(newSelection: T[]): void
+    set(selection: T[]): void
+    add(selection: T[]): void
     remove(selection: T[]): void
     toggle( key: T ): void
 
 }
 
-export function getSelectionModel<T>( multipleSelection: boolean, current: T[], setter: (s: T[]) => void  ): SelectionModel<T> {
+export function getSelectionModel<T>( multipleSelection: boolean, currentSelection: T[], updateSelection: (s: T[]) => void  ): SelectionModel<T> {
     return multipleSelection?
-        new MultipleSelectionModel<T>( current, setter):
-        new SingleSelectionModel<T>( current, setter);
+        new MultipleSelectionModel<T>( currentSelection, updateSelection):
+        new SingleSelectionModel<T>( currentSelection, updateSelection);
 }
 
 class MultipleSelectionModel<T> implements SelectionModel<T> {
 
-    constructor( protected current: T[], protected setter: (s: T[]) => void ){}
+    constructor( protected current: T[], protected update: (s: T[]) => void ){}
 
     isEmpty(): boolean  {
         return this.current.length == 0;
@@ -36,20 +34,20 @@ class MultipleSelectionModel<T> implements SelectionModel<T> {
     }
 
     clear(): void {
-        this.setter([])
+        this.update([])
     }
 
-    set(newSelection: T[]): void {
-        this.setter( newSelection )
+    set(selection: T[]): void {
+        this.update( selection )
     }
 
-    add(newSelection: T[]): void {
-        this.setter( ([...this.current, ...newSelection]))
+    add(selection: T[]): void {
+        this.update( ([...this.current, ...selection]))
     }
 
     remove(selection: T[]): void {
         let data = [...this.current];
-        this.setter( (data.filter( e => selection.indexOf(e) < 0)) )
+        this.update( (data.filter( e => selection.indexOf(e) < 0)) )
     }
 
     toggle( key: T ) {
@@ -64,16 +62,16 @@ class MultipleSelectionModel<T> implements SelectionModel<T> {
 
 class SingleSelectionModel<T> extends MultipleSelectionModel<T> {
 
-    constructor( current: T[], setter: (s: T[]) => void ){
-        super(current, setter)
+    constructor( current: T[], update: (s: T[]) => void ){
+        super(current, update)
     }
 
-    set(newSelection: T[]): void {
-        this.setter( (newSelection && newSelection.length > 0? [newSelection[0]]: []) )
+    set(selection: T[]): void {
+        this.update( (selection && selection.length > 0? [selection[0]]: []) )
     }
 
-    add(newSelection: T[]): void {
-        this.set(newSelection)
+    add(selection: T[]): void {
+        this.set(selection)
     }
 
 }

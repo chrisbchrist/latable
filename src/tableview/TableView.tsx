@@ -9,7 +9,7 @@ export interface TableViewProps<T extends DomainEntity>  {
     title?: string;
     verboseToolbar?: boolean;
     multipleSelection?: boolean;
-    dataSource?: T[];
+    dataSource?: () => T[];
     children?: ReactNode;
 }
 
@@ -22,9 +22,10 @@ export type Keys = string[] | number[];
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
-    insertSelectedItem: (onInsert: OnInsertCallback<T>) => void
-    updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void
-    removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void
+    refreshData: () => void;
+    insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
+    updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
+    removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -32,7 +33,7 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([] as Keys);
-    const [dataSource, setDataSource]           = useState<T[]>(props.dataSource? props.dataSource: []);
+    const [dataSource, setDataSource]           = useState<T[]>(props.dataSource? props.dataSource(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
@@ -47,6 +48,12 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function getItemByKey( key: Key): T | undefined {
         return dataSource.find(e => e.key == key);
+    }
+
+    function refreshData() {
+        if ( props.dataSource ) {
+            setDataSource(props.dataSource())
+        }
     }
 
     function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
@@ -98,6 +105,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const context = {
         selectedRowKeys: selectedRowKeys,
         verboseToolbar: verboseToolbar,
+        refreshData: refreshData,
         insertSelectedItem: insertSelectedItem,
         updateSelectedItem: updateSelectedItem,
         removeSelectedItem: removeSelectedItem,
@@ -133,4 +141,4 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
 }
 
-export default TableView;
+export default React.memo(TableView);

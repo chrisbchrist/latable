@@ -26,6 +26,18 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
 
 }
 
+export function RefreshTableAction<T extends DomainEntity>(props: ActionButtonProps) {
+    return (
+        <TableAction<T, ActionButtonProps>
+            text="Refresh"
+            icon="sync"
+            isValid={() => true}
+            doPerform={ctx => ctx.refreshData()}
+            {...props}
+        />
+    );
+}
+
 export interface InsertTableActionProps<T extends DomainEntity> extends ActionButtonProps {
     onInsert: OnInsertCallback<T>
 }

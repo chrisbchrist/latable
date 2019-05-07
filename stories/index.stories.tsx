@@ -5,10 +5,14 @@ import {storiesOf} from '@storybook/react';
 
 
 import TableView from '../src/tableview/TableView';
-import {InsertTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
+import {InsertTableAction,
+        RefreshTableAction,
+        RemoveTableAction,
+        UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import {Modal} from "antd";
+import {Divider, Modal} from "antd";
+import {DomainEntity} from "../src/domain/Domain";
 const uuid4 = require('uuid/v4');
 
 const columns = [{
@@ -73,13 +77,17 @@ function confirm( onComplete: ( success: boolean) => void): void {
 
 }
 
+const getData: () => DomainEntity[] = () => data;
+
 storiesOf('TableView', module)
 
     .addDecorator(story => <div style={{ padding: '1rem' }}>{story()}</div>)
 
     .add('with standard toolbar', () => {
         return (
-            <TableView columns={columns} dataSource={data}>
+            <TableView columns={columns} dataSource={getData}>
+                <RefreshTableAction />
+                <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
                 <UpdateTableAction onUpdate={item => item}/>
                 <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
@@ -89,7 +97,9 @@ storiesOf('TableView', module)
 
     .add('with verbose toolbar', () => {
         return (
-            <TableView columns={columns} verboseToolbar={true} dataSource={data}>
+            <TableView columns={columns} verboseToolbar={true} dataSource={getData}>
+                <RefreshTableAction />
+                <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
                 <UpdateTableAction onUpdate={item => item}/>
                 <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
@@ -100,7 +110,9 @@ storiesOf('TableView', module)
     .add('with custom toolbar button properties', () => {
 
         return (
-            <TableView columns={columns} verboseToolbar={true} dataSource={data}>
+            <TableView columns={columns} verboseToolbar={true} dataSource={getData}>
+                <RefreshTableAction iconProps={{spin:true}}/>
+                <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
                                    icon={'plus-circle'}
                                    buttonProps={{ type: 'primary', shape: 'round'}}
@@ -114,7 +126,9 @@ storiesOf('TableView', module)
 
     .add('with multiple row selection', () => {
         return (
-            <TableView columns={columns} dataSource={data} multipleSelection={true}>
+            <TableView columns={columns} dataSource={getData} multipleSelection={true}>
+                <RefreshTableAction />
+                <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
                 <UpdateTableAction onUpdate={item => item}/>
                 <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>

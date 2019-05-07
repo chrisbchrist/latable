@@ -96,6 +96,4 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
         />
     );
 
-
-
 }

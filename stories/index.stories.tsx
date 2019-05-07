@@ -1,12 +1,13 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import {storiesOf} from '@storybook/react';
 import TableView from '../src/tableview/TableView';
 import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import {Divider, Modal} from "antd";
+import {Divider, Form, Input, Modal, Radio} from "antd";
 import {DomainEntity} from "../src/domain/Domain";
+import {FormComponentProps} from "antd/es/form";
 // import {linkTo} from '@storybook/addon-links';
 const uuid4 = require('uuid/v4');
 
@@ -62,6 +63,87 @@ const data = [
 //       </span>
 //     </Button>
 //   ));
+
+
+function CollectionForm<T>(props: FormComponentProps<T>) {
+
+    const { visible, onCancel, onCreate, form } = props;
+    const { getFieldDecorator } = form;
+
+    return (
+        <Modal
+            visible={visible}
+            title="Create a new collection"
+            okText="Create"
+            onCancel={onCancel}
+            onOk={onCreate}
+            >
+            <Form layout="vertical">
+                <Form.Item label="Title">
+                    {getFieldDecorator('title', {
+                        rules: [{ required: true, message: 'Please input the title of collection!' }],
+                    })(
+                        <Input />
+                    )}
+                </Form.Item>
+                <Form.Item label="Description">
+                    {getFieldDecorator('description')(<Input type="textarea" />)}
+                </Form.Item>
+                <Form.Item className="collection-create-form_last-form-item">
+                    {getFieldDecorator('modifier', {
+                        initialValue: 'public',
+                    })(
+                        <Radio.Group>
+                            <Radio value="public">Public</Radio>
+                            <Radio value="private">Private</Radio>
+                        </Radio.Group>
+                    )}
+                </Form.Item>
+            </Form>
+        </Modal>
+    );
+}
+const CollectionCreateForm = Form.create({ name: 'Modal Form' })( (props) => CollectionForm(props));
+
+
+function CollectionsPage<T>(props: FormComponentProps<T>) {
+
+    const [visible, setVisible] = useState(false);
+    let formRef: Form;
+
+
+    // const showModal = () => {
+    //     setVisible(true)
+    // };
+
+    // const handleCancel = () => {
+    //     setVisible(false)
+    // };
+
+    const handleCreate = () => {
+        const form = formRef.props.form;
+        form!.validateFields((err: any, values: any) => {
+            if (err) {
+                return;
+            }
+
+            console.log('Received values of form: ', values);
+            form!.resetFields();
+            setVisible(false)
+        });
+    }
+
+    return (
+        <div>
+            <CollectionCreateForm
+                wrappedComponentRef={ (ref:Form) => formRef = ref }
+                visible={visible}
+                onCancel={ () => setVisible(false) }
+                onCreate={handleCreate}
+            />
+        </div>
+    );
+}
 
 function confirm( onComplete: ( success: boolean) => void): void {
     Modal.confirm({

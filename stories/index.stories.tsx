@@ -7,7 +7,7 @@ import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAct
 import '../src/indigo.css';
 import {Divider, Form, Input, Modal, Radio} from "antd";
 import {DomainEntity} from "../src/domain/Domain";
-import {FormComponentProps} from "antd/es/form";
+import {renderInModal} from "../src/modal/ModalContaner";
 // import {linkTo} from '@storybook/addon-links';
 const uuid4 = require('uuid/v4');
 
@@ -86,75 +86,74 @@ function confirmRemoval( person: Person): Promise<boolean> {
 
 }
 
+const personForm = (
+    <Form layout="vertical">
+        <Form.Item label="Title">
+            {/*{getFieldDecorator('title', {*/}
+            {/*    rules: [{ required: true, message: 'Please input the title of collection!' }],*/}
+            {/*})(*/}
+            {/*    <Input />*/}
+            {/*)}*/}
+            <Input />
+        </Form.Item>
+        <Form.Item label="Description">
+            {/*{getFieldDecorator('description')(<Input type="textarea" />)}*/}
+            <Input type="textarea" />
+        </Form.Item>
+        <Form.Item className="collection-create-form_last-form-item">
+            {/*{getFieldDecorator('modifier', {*/}
+            {/*    initialValue: 'public',*/}
+            {/*})(*/}
+            {/*    <Radio.Group>*/}
+            {/*        <Radio value="public">Public</Radio>*/}
+            {/*        <Radio value="private">Private</Radio>*/}
+            {/*    </Radio.Group>*/}
+            {/*)}*/}
+            <Radio.Group>
+                <Radio value="public">Public</Radio>
+                <Radio value="private">Private</Radio>
+            </Radio.Group>
+        </Form.Item>
+    </Form>
+);
+
+
 function insertItem( person?: Person ): Promise<Person> {
 
-    let newPerson = person? {...person, key: uuid4(), firstName: person.firstName + " +"}:
-        { key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0 };
+    return new Promise<Person>( (resolve) => {
 
-    return Promise.resolve(newPerson)
+        let newPerson = person ? {...person, key: uuid4(), firstName: person.firstName + " +"} :
+            {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0};
+
+        renderInModal( personForm,{
+            title   : 'Insert Person',
+            okText  : 'Create',
+            onOk    : () => resolve(newPerson),
+            onCancel: () => resolve(undefined),
+        } )
+
+    });
 }
 
 function updateItem( person: Person ): Promise<Person> {
-    return Promise.resolve({...person, name: person.age + 10})
+
+    return new Promise<Person>( (resolve) => {
+
+        let updatedPerson = {...person, age: person.age + 10, firstName: person.firstName + " ^"};
+
+        renderInModal( personForm,{
+            title   : 'Update Person',
+            okText  : 'Update',
+            onOk    : () => resolve(updatedPerson),
+            onCancel: () => resolve(undefined),
+        } )
+
+    });
+
 }
 
-const getData: () => Person[] = () => data;
+const retrieveData: () => Person[] = () => data;
 
-interface ModalFormProps<T> {
-    onComplete: (result: T|undefined)=>void
-}
-
-//TODO Generalize modal forms
-function ModalForm<T>( props: ModalFormProps<T> ) {
-
-    const [modalVisible, setModalVisible] = useState<boolean>(true);
-
-    function closeModal( result: T|undefined ): void {
-        setModalVisible(false);
-        props.onComplete(result)
-    }
-
-    return (
-        <Modal
-            visible={modalVisible}
-            title="Create a new collection"
-            okText="Create"
-            onCancel={ e => closeModal(undefined)}
-            onOk={ e => closeModal(undefined)}>
-            <Form layout="vertical">
-                <Form.Item label="Title">
-                    {/*{getFieldDecorator('title', {*/}
-                    {/*    rules: [{ required: true, message: 'Please input the title of collection!' }],*/}
-                    {/*})(*/}
-                    {/*    <Input />*/}
-                    {/*)}*/}
-                    <Input />
-                </Form.Item>
-                <Form.Item label="Description">
-                    {/*{getFieldDecorator('description')(<Input type="textarea" />)}*/}
-                    <Input type="textarea" />
-                </Form.Item>
-                <Form.Item className="collection-create-form_last-form-item">
-                    {/*{getFieldDecorator('modifier', {*/}
-                    {/*    initialValue: 'public',*/}
-                    {/*})(*/}
-                    {/*    <Radio.Group>*/}
-                    {/*        <Radio value="public">Public</Radio>*/}
-                    {/*        <Radio value="private">Private</Radio>*/}
-                    {/*    </Radio.Group>*/}
-                    {/*)}*/}
-                    <Radio.Group>
-                        <Radio value="public">Public</Radio>
-                        <Radio value="private">Private</Radio>
-                    </Radio.Group>
-                </Form.Item>
-            </Form>
-        </Modal>
-    );
-}
-
-//let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
-//presentUI([form]);
 
 storiesOf('TableView', module)
 
@@ -162,7 +161,7 @@ storiesOf('TableView', module)
 
     .add('with standard toolbar', () => {
         return (
-            <TableView columns={columns} loadData={getData}>
+            <TableView columns={columns} loadData={retrieveData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem} />
@@ -174,7 +173,7 @@ storiesOf('TableView', module)
 
     .add('with verbose toolbar', () => {
         return (
-            <TableView columns={columns} verboseToolbar={true} loadData={getData}>
+            <TableView columns={columns} verboseToolbar={true} loadData={retrieveData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem}/>
@@ -189,7 +188,7 @@ storiesOf('TableView', module)
         return (
             <TableView columns={columns}
                        verboseToolbar={true}
-                       loadData={getData} >
+                       loadData={retrieveData} >
                 <RefreshTableAction iconProps={{spin:true}}/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
@@ -210,7 +209,7 @@ storiesOf('TableView', module)
         return (
             <TableView columns={columns}
                        bordered
-                       loadData={getData} >
+                       loadData={retrieveData} >
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert= {insertItem} />
@@ -223,7 +222,7 @@ storiesOf('TableView', module)
 
     .add('with multiple row selection', () => {
         return (
-            <TableView columns={columns} loadData={getData} multipleSelection={true}>
+            <TableView columns={columns} loadData={retrieveData} multipleSelection={true}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem}/>

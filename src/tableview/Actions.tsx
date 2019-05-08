@@ -14,14 +14,12 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
     const { perform, isValid, doPerform, ...otherProps } = config;
 
     return (
-
         <ActionButton
             perform={() => perform? perform(): doPerform(context)}
             verbose={context.verboseToolbar}
             disabled={!isValid(context)}
             {...otherProps}
         />
-
     );
 
 }
@@ -52,7 +50,7 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
             text="Insert"
             icon="plus"
             isValid={() => !props.isValid || props.isValid()}
-            doPerform={ctx => ctx.insertSelectedItem( item => props.onInsert(item))}
+            doPerform={ctx => ctx.insertSelectedItem(props.onInsert)}
             {...props}
         />
     );
@@ -71,7 +69,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
             text="Edit"
             icon="edit"
             isValid={ctx => ctx.selectedRowKeys.length == 1 && customIsValid}
-            doPerform={ctx => ctx.updateSelectedItem( item => props.onUpdate(item))}
+            doPerform={ctx => ctx.updateSelectedItem( props.onUpdate)}
             {...props}
         />
     );
@@ -92,7 +90,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
             icon="delete"
             {...props}
             isValid   = { ctx => ctx.selectedRowKeys.length == 1  && customIsValid }
-            doPerform = { ctx => ctx.removeSelectedItem( ( item, onComplete) => props.onRemove(item, onComplete)) }
+            doPerform = { ctx => ctx.removeSelectedItem(props.onRemove) }
         />
     );
 

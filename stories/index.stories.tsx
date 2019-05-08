@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 
 import {storiesOf} from '@storybook/react';
-import TableView from '../src/tableview/TableView';
+import TableView, {OnUpdateCallback} from '../src/tableview/TableView';
 import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
@@ -64,87 +64,6 @@ const data = [
 //     </Button>
 //   ));
 
-
-function CollectionForm<T>(props: FormComponentProps<T>) {
-
-    const { visible, onCancel, onCreate, form } = props;
-    const { getFieldDecorator } = form;
-
-    return (
-        <Modal
-            visible={visible}
-            title="Create a new collection"
-            okText="Create"
-            onCancel={onCancel}
-            onOk={onCreate}
-            >
-            <Form layout="vertical">
-                <Form.Item label="Title">
-                    {getFieldDecorator('title', {
-                        rules: [{ required: true, message: 'Please input the title of collection!' }],
-                    })(
-                        <Input />
-                    )}
-                </Form.Item>
-                <Form.Item label="Description">
-                    {getFieldDecorator('description')(<Input type="textarea" />)}
-                </Form.Item>
-                <Form.Item className="collection-create-form_last-form-item">
-                    {getFieldDecorator('modifier', {
-                        initialValue: 'public',
-                    })(
-                        <Radio.Group>
-                            <Radio value="public">Public</Radio>
-                            <Radio value="private">Private</Radio>
-                        </Radio.Group>
-                    )}
-                </Form.Item>
-            </Form>
-        </Modal>
-    );
-}
-const CollectionCreateForm = Form.create({ name: 'Modal Form' })( (props) => CollectionForm(props));
-
-
-function CollectionsPage<T>(props: FormComponentProps<T>) {
-
-    const [visible, setVisible] = useState(false);
-    let formRef: Form;
-
-
-    // const showModal = () => {
-    //     setVisible(true)
-    // };
-
-    // const handleCancel = () => {
-    //     setVisible(false)
-    // };
-
-    const handleCreate = () => {
-        const form = formRef.props.form;
-        form!.validateFields((err: any, values: any) => {
-            if (err) {
-                return;
-            }
-
-            console.log('Received values of form: ', values);
-            form!.resetFields();
-            setVisible(false)
-        });
-    }
-
-    return (
-        <div>
-            <CollectionCreateForm
-                wrappedComponentRef={ (ref:Form) => formRef = ref }
-                visible={visible}
-                onCancel={ () => setVisible(false) }
-                onCreate={handleCreate}
-            />
-        </div>
-    );
-}
-
 function confirm( onComplete: ( success: boolean) => void): void {
     Modal.confirm({
         title: 'Delete selected Item?',
@@ -156,6 +75,59 @@ function confirm( onComplete: ( success: boolean) => void): void {
         onCancel: () => onComplete(false),
     });
 
+}
+
+interface ModalFormProps<T> {
+    onComplete: (result: T|undefined)=>void
+}
+
+//TODO Generalize modal forms
+function ModalForm<T>( props: ModalFormProps<T> ) {
+
+    const [modalVisible, setModalVisible] = useState<boolean>(true);
+
+    function closeModal( result: T|undefined ): void {
+        setModalVisible(false);
+        props.onComplete(result)
+    }
+
+    return (
+        <Modal
+            visible={modalVisible}
+            title="Create a new collection"
+            okText="Create"
+            onCancel={ e => closeModal(undefined)}
+            onOk={ e => closeModal(undefined)}>
+            <Form layout="vertical">
+                <Form.Item label="Title">
+                    {/*{getFieldDecorator('title', {*/}
+                    {/*    rules: [{ required: true, message: 'Please input the title of collection!' }],*/}
+                    {/*})(*/}
+                    {/*    <Input />*/}
+                    {/*)}*/}
+                    <Input />
+                </Form.Item>
+                <Form.Item label="Description">
+                    {/*{getFieldDecorator('description')(<Input type="textarea" />)}*/}
+                    <Input type="textarea" />
+                </Form.Item>
+                <Form.Item className="collection-create-form_last-form-item">
+                    {/*{getFieldDecorator('modifier', {*/}
+                    {/*    initialValue: 'public',*/}
+                    {/*})(*/}
+                    {/*    <Radio.Group>*/}
+                    {/*        <Radio value="public">Public</Radio>*/}
+                    {/*        <Radio value="private">Private</Radio>*/}
+                    {/*    </Radio.Group>*/}
+                    {/*)}*/}
+                    <Radio.Group>
+                        <Radio value="public">Public</Radio>
+                        <Radio value="private">Private</Radio>
+                    </Radio.Group>
+                </Form.Item>
+            </Form>
+        </Modal>
+    );
 }
 
 const getData: () => DomainEntity[] = () => data;
@@ -170,8 +142,11 @@ storiesOf('TableView', module)
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return {...item, key: uuid4()} as DomainEntity}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <UpdateTableAction onUpdate={ (item, presentUI, onComplete) => {
+                    let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
+                    presentUI([form]);
+                }} />
+                <RemoveTableAction onRemove={(item, onComplete) => confirm(onComplete) }/>
             </TableView>
         )
     })
@@ -182,8 +157,11 @@ storiesOf('TableView', module)
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <UpdateTableAction onUpdate={ (item, presentUI, onComplete) => {
+                    let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
+                    presentUI([form]);
+                }} />
+                <RemoveTableAction onRemove={(item, onComplete) => confirm(onComplete) }/>
             </TableView>
         )
     })
@@ -200,8 +178,12 @@ storiesOf('TableView', module)
                                    icon={'plus-circle'}
                                    buttonProps={{ type: 'primary', shape: 'round'}}
                                    onInsert= {item => {return { ...item, key: uuid4()}} } />
-                <UpdateTableAction onUpdate= {item => item } buttonProps={{ type: 'dashed' }}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }
+                <UpdateTableAction onUpdate={ (item, presentUI, onComplete) => {
+                                        let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
+                                        presentUI([form]);
+                                   }}
+                                   buttonProps={{ type: 'dashed' }}/>
+                <RemoveTableAction onRemove={(item, onComplete) => confirm(onComplete) }
                                    buttonProps={{ type: 'danger' }}/>
             </TableView>
         )
@@ -217,8 +199,11 @@ storiesOf('TableView', module)
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert= {item => {return { ...item, key: uuid4()}} } />
-                <UpdateTableAction onUpdate= {item => item } />
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) } />
+                <UpdateTableAction onUpdate={ (item, presentUI, onComplete) => {
+                    let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
+                    presentUI([form]);
+                }} />
+                <RemoveTableAction onRemove={(item, onComplete) => confirm(onComplete) } />
             </TableView>
         )
 
@@ -230,8 +215,11 @@ storiesOf('TableView', module)
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <UpdateTableAction onUpdate={ (item, presentUI, onComplete) => {
+                    let form = <ModalForm key={uuid4()} onComplete={onComplete} />;
+                    presentUI([form]);
+                }} />
+                <RemoveTableAction onRemove={(item, onComplete) => confirm(onComplete) }/>
             </TableView>
         )
     })

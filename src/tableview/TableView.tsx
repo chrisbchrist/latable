@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
@@ -11,18 +11,20 @@ export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
 }
 
 export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
-export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefined;
-export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete: (success: boolean)=>void )  => void;
+export type OnUpdateCallback<T extends DomainEntity> = (item: T, presentUI: (children: ReactNode[]) => void,  onComplete:(result: T|undefined)=>void) => void;
+export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete:(success: boolean)=>void ) => void;
 
 export type Keys = string[] | number[];
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
+
     refreshData: () => void;
     insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
     updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
     removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;
+
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -33,6 +35,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
     const [loading, setLoading]                 = useState(false);
+    const [customChildren, setCustomChildren]   = useState<ReactNode[]>([]);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,
@@ -73,13 +76,19 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         if ( selectionModel.isEmpty()) return;
         let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( selectedIndex >= 0 ) {
-            const updatedItem = onUpdate(dataSource[selectedIndex]);
-            if (updatedItem) {
-                let data = [...dataSource];
-                data[selectedIndex] = updatedItem;
-                setDataSource(data);
-                selectRow(updatedItem);
-            }
+            console.log('TableView: Starting item update at index ' + selectedIndex);
+            onUpdate( dataSource[selectedIndex], setCustomChildren, (updatedItem) => {
+                if (updatedItem) {
+                    let data = [...dataSource];
+                    data[selectedIndex] = updatedItem;
+                    setDataSource(data);
+                    selectRow(updatedItem);
+                    console.log('TableView: Item updated successfully');
+                } else {
+                    console.log('TableView: Item update canceled');
+
+                }
+            });
         }
     }
 
@@ -90,6 +99,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
+            console.log('TableView: Starting item removal at index ' + itemIndex);
             onRemove( dataSource[itemIndex], ( success) => {
                 if ( success) {
                     let data = [...dataSource];
@@ -100,6 +110,9 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
                     let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
                     setSelectedRowKeys(selection);
+                    console.log('TableView: Item removed successfully');
+                } else {
+                    console.log('TableView: Item removal canceled');
                 }
             });
 
@@ -140,6 +153,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     onClick: () => selectRow(record),
                 })}
             />
+            {customChildren}
         </TableViewContext.Provider>
     )
 

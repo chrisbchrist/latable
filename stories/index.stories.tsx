@@ -10,6 +10,7 @@ import {DomainEntity} from "../src/domain/Domain";
 // import {linkTo} from '@storybook/addon-links';
 const uuid4 = require('uuid/v4');
 
+//TODO derive columns from domain entity
 const columns = [{
     title: 'First Name',
     dataIndex: 'firstName',
@@ -29,7 +30,13 @@ function age( bd: Date ): number {
     return Math.abs(Math.floor(diff/365.25));
 }
 
-const data = [
+interface Person extends DomainEntity{
+    firstName: string,
+    lastName: string,
+    age: number,
+}
+
+const data: Person[] = [
     {
         key:  uuid4(),
         firstName: "Jason",
@@ -63,20 +70,34 @@ const data = [
 //     </Button>
 //   ));
 
-function confirm( onComplete: ( success: boolean) => void): void {
-    Modal.confirm({
-        title: 'Delete selected Item?',
-        content: 'Some descriptions here',
-        okText: 'Yes',
-        okType: 'danger',
-        cancelText: 'No',
-        onOk: () => onComplete(true) ,
-        onCancel: () => onComplete(false),
+function confirmRemoval( person: Person): Promise<boolean> {
+    return new Promise<boolean>( (resolve) => {
+        Modal.confirm({
+            title: 'Delete selected Item?',
+            content: 'Some descriptions here',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+        })
     });
 
 }
 
-const getData: () => DomainEntity[] = () => data;
+function insertItem( person?: Person ): Promise<Person> {
+
+    let newPerson = person? {...person, key: uuid4(), firstName: person.firstName + " +"}:
+        { key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0 };
+
+    return Promise.resolve(newPerson)
+}
+
+function updateItem( person: Person ): Promise<Person> {
+    return Promise.resolve({...person, name: person.age + 10})
+}
+
+const getData: () => Person[] = () => data;
 
 storiesOf('TableView', module)
 
@@ -87,9 +108,9 @@ storiesOf('TableView', module)
             <TableView columns={columns} loadData={getData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={item => {return {...item, key: uuid4()} as DomainEntity}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <InsertTableAction onInsert={insertItem} />
+                <UpdateTableAction onUpdate={updateItem}/>
+                <RemoveTableAction onRemove={confirmRemoval}/>
             </TableView>
         )
     })
@@ -99,9 +120,9 @@ storiesOf('TableView', module)
             <TableView columns={columns} verboseToolbar={true} loadData={getData}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <InsertTableAction onInsert={insertItem}/>
+                <UpdateTableAction onUpdate={updateItem}/>
+                <RemoveTableAction onRemove={confirmRemoval}/>
             </TableView>
         )
     })
@@ -117,9 +138,10 @@ storiesOf('TableView', module)
                 <InsertTableAction text={'Create'}
                                    icon={'plus-circle'}
                                    buttonProps={{ type: 'primary', shape: 'round'}}
-                                   onInsert= {item => {return { ...item, key: uuid4()}} } />
-                <UpdateTableAction onUpdate= {item => item } buttonProps={{ type: 'dashed' }}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }
+                                   onInsert= {insertItem} />
+                <UpdateTableAction onUpdate= {updateItem}
+                                   buttonProps={{ type: 'dashed' }}/>
+                <RemoveTableAction onRemove={confirmRemoval}
                                    buttonProps={{ type: 'danger' }}/>
             </TableView>
         )
@@ -134,9 +156,9 @@ storiesOf('TableView', module)
                        loadData={getData} >
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert= {item => {return { ...item, key: uuid4()}} } />
-                <UpdateTableAction onUpdate= {item => item } />
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) } />
+                <InsertTableAction onInsert= {insertItem} />
+                <UpdateTableAction onUpdate= {updateItem} />
+                <RemoveTableAction onRemove={confirmRemoval} />
             </TableView>
         )
 
@@ -147,9 +169,9 @@ storiesOf('TableView', module)
             <TableView columns={columns} loadData={getData} multipleSelection={true}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={item => {return { ...item, key: uuid4()}}}/>
-                <UpdateTableAction onUpdate={item => item}/>
-                <RemoveTableAction onRemove={(item, onCompletion) => confirm(onCompletion) }/>
+                <InsertTableAction onInsert={insertItem}/>
+                <UpdateTableAction onUpdate={updateItem}/>
+                <RemoveTableAction onRemove={confirmRemoval}/>
             </TableView>
         )
     })

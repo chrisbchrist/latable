@@ -10,9 +10,9 @@ export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     loadData?: () => T[];         // function to load data into the table
 }
 
-export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
-export type OnUpdateCallback<T extends DomainEntity> = (item: T)  => T | undefined;
-export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete: (success: boolean)=>void )  => void;
+export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
+export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T | undefined>;
+export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
 
 export type Keys = string[] | number[];
 
@@ -20,9 +20,9 @@ export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
     refreshData: () => void;
-    insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
-    updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
-    removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;
+    insertSelectedItem: (onInsert: InsertCallback<T>) => void;
+    updateSelectedItem: (onUpdate: UpdateCallback<T>) => void;
+    removeSelectedItem: (onRemove: RemoveCallback<T>) => void;
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -60,38 +60,40 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
-    function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
+    function insertSelectedItem( onInsert: InsertCallback<T> ) {
         const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0] as Key);
-        const insertedItem = onInsert(selectedItem);
-        if ( insertedItem ) {
-            setDataSource([...dataSource, insertedItem]);
-            selectRow(insertedItem)
-        }
+        onInsert(selectedItem).then( insertedItem => {
+            if (insertedItem) {
+                setDataSource([...dataSource, insertedItem]);
+                selectRow(insertedItem)
+            }
+        });
     }
 
-    function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
+    function updateSelectedItem( onUpdate: UpdateCallback<T>) {
         if ( selectionModel.isEmpty()) return;
         let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( selectedIndex >= 0 ) {
-            const updatedItem = onUpdate(dataSource[selectedIndex]);
-            if (updatedItem) {
-                let data = [...dataSource];
-                data[selectedIndex] = updatedItem;
-                setDataSource(data);
-                selectRow(updatedItem);
-            }
+            onUpdate(dataSource[selectedIndex]).then( updatedItem => {
+                if (updatedItem) {
+                    let data = [...dataSource];
+                    data[selectedIndex] = updatedItem;
+                    setDataSource(data);
+                    selectRow(updatedItem);
+                }
+            });
         }
     }
 
-    function removeSelectedItem( onRemove: OnRemoveCallback<T> ) {
+    function removeSelectedItem( onRemove: RemoveCallback<T> ) {
 
         if ( selectionModel.isEmpty() ) return;
 
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
-            onRemove( dataSource[itemIndex], ( success) => {
-                if ( success) {
+            onRemove( dataSource[itemIndex] ).then( shouldRemove => {
+                if ( shouldRemove) {
                     let data = [...dataSource];
                     data.splice(itemIndex, 1);
                     setDataSource(data);
@@ -101,8 +103,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
                     setSelectedRowKeys(selection);
                 }
-            });
-
+            })
         }
     }
 

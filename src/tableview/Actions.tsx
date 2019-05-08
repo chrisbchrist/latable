@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {OnInsertCallback, OnRemoveCallback, OnUpdateCallback, TableViewContext} from "./TableView"
+import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
 
@@ -43,7 +43,7 @@ export function RefreshTableAction<T extends DomainEntity>(props: TableActionPro
 }
 
 export interface InsertTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onInsert: OnInsertCallback<T>
+    onInsert: InsertCallback<T>
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
@@ -52,14 +52,14 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
             text="Insert"
             icon="plus"
             isValid={() => !props.isValid || props.isValid()}
-            doPerform={ctx => ctx.insertSelectedItem( item => props.onInsert(item))}
+            doPerform={ctx => ctx.insertSelectedItem(props.onInsert)}
             {...props}
         />
     );
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onUpdate: OnUpdateCallback<T>
+    onUpdate: UpdateCallback<T>
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
@@ -71,7 +71,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
             text="Edit"
             icon="edit"
             isValid={ctx => ctx.selectedRowKeys.length == 1 && customIsValid}
-            doPerform={ctx => ctx.updateSelectedItem( item => props.onUpdate(item))}
+            doPerform={ctx => ctx.updateSelectedItem(props.onUpdate)}
             {...props}
         />
     );
@@ -79,7 +79,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onRemove: OnRemoveCallback<T>
+    onRemove: RemoveCallback<T>
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
@@ -92,7 +92,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
             icon="delete"
             {...props}
             isValid   = { ctx => ctx.selectedRowKeys.length == 1  && customIsValid }
-            doPerform = { ctx => ctx.removeSelectedItem( ( item, onComplete) => props.onRemove(item, onComplete)) }
+            doPerform = { ctx => ctx.removeSelectedItem(props.onRemove) }
         />
     );
 

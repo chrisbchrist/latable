@@ -13,10 +13,6 @@ export interface Person extends DomainEntity{
 
 function PersonFormImpl( props: any) {
 
-    let [firstName, setFirstName] = useState(props.firstName);
-    let [lastName, setLastName]   = useState(props.lastName);
-    let [age, setAge]             = useState(props.age);
-
     const context = useContext(ModalContainerContext);
 
     // context.setLoading(true);
@@ -31,30 +27,30 @@ function PersonFormImpl( props: any) {
     //     // }
     // });
 
+    const nameValidationRules = {
+        validateFirst: true, // stop validation of first error
+        rules: [{ required: true, message: 'Value is required' },]
+    };
+    const ageValidationRules = {
+        validateFirst: true, // stop validation of first error
+        rules: [{ required: true, message: 'Value is required' },
+                { type: 'number', message: 'Should be a number.' },]
+    };
+
     return <Form layout="vertical" >
         <Form.Item label="First Name" >
-            { getFieldDecorator('First Name', {
-                rules: [{ required: true, message: 'First Name is required' }],
-                initialValue: firstName
-            })(
-                <Input  /> //onChange={setFirstName}
+            { getFieldDecorator('First Name', { initialValue: props.firstName, ...nameValidationRules, })(
+                <Input />
             )}
-
         </Form.Item>
         <Form.Item label="Last Name">
-            {getFieldDecorator('Last Name', {
-                rules: [{ required: true, message: 'Last Name is required' }],
-                initialValue: lastName
-            })(
-                <Input onChange={setLastName}/>
+            {getFieldDecorator('Last Name', { initialValue: props.lastName, ...nameValidationRules, })(
+                <Input />
             )}
         </Form.Item>
         <Form.Item label="Age">
-            {getFieldDecorator('Age', {
-                rules: [{ required: true, message: 'Age is required' }],
-                initialValue: age
-            })(
-                <InputNumber onChange={setAge}/>
+            {getFieldDecorator('Age', {  initialValue: props.age, ...ageValidationRules, })(
+                <InputNumber />
             )}
         </Form.Item>
     </Form>

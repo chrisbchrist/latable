@@ -8,6 +8,7 @@ export interface Person extends DomainEntity{
     firstName: string,
     lastName: string,
     age: number,
+    profession: string,
 }
 
 function PersonFormImpl( props: any) {

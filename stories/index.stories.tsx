@@ -1,15 +1,17 @@
 import React from 'react';
+const uuid4 = require('uuid/v4');
 
 import {storiesOf} from '@storybook/react';
+
+import {Divider} from "antd";
+
 import TableView from '../src/tableview/TableView';
 import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import {Divider, Modal} from "antd";
-import {renderInModal} from "../src/modal/ModalContaner";
 import PersonForm, {Person} from "./PersonForm";
+import Modals from "../src/modal/ModalContaner";
 // import {linkTo} from '@storybook/addon-links';
-const uuid4 = require('uuid/v4');
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -24,10 +26,14 @@ const columns = [{
     title: 'Age',
     dataIndex: 'age',
     key: 'age',
+}, {
+    title: 'Profession',
+    dataIndex: 'profession',
+    key: 'profession',
 }];
 
 function age( bd: Date ): number {
-    var diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
+    let diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
     return Math.abs(Math.floor(diff/365.25));
 }
 
@@ -36,19 +42,22 @@ const data: Person[] = [
         key:  uuid4(),
         firstName: "Jason",
         lastName: "Rocco",
-        age : age( new Date(1971, 9, 15))
+        age : age( new Date(1971, 9, 15)),
+        profession: 'Director',
     },
     {
         key: uuid4(),
         firstName: "Roman",
         lastName: "Vorobiev",
-        age : age( new Date(1966, 7, 7))
+        age : age( new Date(1966, 7, 7)),
+        profession: 'Software Developer',
     },
     {
         key: uuid4(),
         firstName: "Vladimir",
         lastName: "Birbrier",
-        age : age( new Date(1978, 9, 15))
+        age : age( new Date(1978, 9, 15)),
+        profession: 'Software Developer',
     },
 
 ];
@@ -65,19 +74,11 @@ const data: Person[] = [
 //     </Button>
 //   ));
 
-function confirmRemoval( person: Person): Promise<boolean> {
-    return new Promise<boolean>( (resolve) => {
-        Modal.confirm({
-            title: 'Delete selected Item?',
-            content: 'Some descriptions here',
-            okText: 'Yes',
-            okType: 'danger',
-            cancelText: 'No',
-            onOk: () => resolve(true),
-            onCancel: () => resolve(false),
-        })
+function confirmRemoval( person: Person ): Promise<boolean> {
+    return Modals.confirm({
+        title: 'Delete selected Item?',
+        content: 'Some descriptions here',
     });
-
 }
 
 
@@ -86,9 +87,9 @@ function insertItem( person?: Person ): Promise<Person> {
     return new Promise<Person>( (resolve) => {
 
         let newPerson = person ? {...person, key: uuid4(), firstName: person.firstName + " +"} :
-            {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0};
+            {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession:'Unknown'};
 
-        renderInModal( <PersonForm {...person}/>,{
+        Modals.show( <PersonForm {...person}/>,{
             title   : 'Insert Person',
             okText  : 'Create',
             onOk    : () => resolve(newPerson),
@@ -104,7 +105,7 @@ function updateItem( person: Person ): Promise<Person> {
 
         let updatedPerson = {...person, age: person.age + 10, firstName: person.firstName + " ^"};
 
-        renderInModal( <PersonForm {...person} />,{
+        Modals.show( <PersonForm {...person} />,{
             title   : 'Update Person',
             okText  : 'Update',
             onOk    : () => resolve(updatedPerson),
@@ -124,7 +125,7 @@ storiesOf('TableView', module)
 
     .add('with standard toolbar', () => {
         return (
-            <TableView columns={columns} loadData={retrieveData}>
+            <TableView columns={columns} loadData={retrieveData} >
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem} />
@@ -175,8 +176,8 @@ storiesOf('TableView', module)
                        loadData={retrieveData} >
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert= {insertItem} />
-                <UpdateTableAction onUpdate= {updateItem} />
+                <InsertTableAction onInsert={insertItem} />
+                <UpdateTableAction onUpdate={updateItem} />
                 <RemoveTableAction onRemove={confirmRemoval} />
             </TableView>
         )

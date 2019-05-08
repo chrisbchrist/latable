@@ -1,7 +1,7 @@
 import React, {ReactElement, useState} from 'react';
 import ReactDOM from 'react-dom'
 import {Modal} from "antd";
-import {ModalProps} from "antd/es/modal";
+import {ModalFuncProps, ModalProps} from "antd/es/modal";
 
 export interface ModalContainerContext {
     setOkDisabled: (disable: boolean) => void
@@ -52,17 +52,49 @@ function ModalContainer( props: ModalContainerProps ) {
 
 }
 
-export function renderInModal( component: ReactElement, props?: ModalProps ): void {
+export default class Modals {
 
-    let div = document.createElement('div');
-    document.body.appendChild(div);
 
-    function destroyElement() {
-        let unmountResult = ReactDOM.unmountComponentAtNode(div);
-        if (unmountResult && div.parentNode) {
-            div.parentNode.removeChild(div);
+    //TODO Document the ModalContainerContext
+    /**
+     * Shows an arbitrary content within a modal window
+     * @param content modal window content
+     * @param props properties of modal window
+     */
+    public static show(content: ReactElement, props?: ModalProps): void {
+
+        let div = document.createElement('div');
+        document.body.appendChild(div);
+
+        function destroyElement() {
+            let unmountResult = ReactDOM.unmountComponentAtNode(div);
+            if (unmountResult && div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
         }
+
+        ReactDOM.render(<ModalContainer {...props} children={content} cleanup={destroyElement}/>, div);
     }
 
-    ReactDOM.render( <ModalContainer {...props} children={component} cleanup={destroyElement} />, div);
+    /**
+     * Shows confirmation modal window.
+     * @param props modal's props
+     * @returns Promise<boolean> indicating the async nature of confirmation
+     */
+    public static confirm(props: ModalFuncProps): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            Modal.confirm({
+                // title: 'Delete selected Item?',
+                // content: 'Some descriptions here',
+                okText: 'Yes',
+                okType: 'danger',
+                cancelText: 'No',
+                ...props,
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+            })
+        });
+
+    }
+
 }

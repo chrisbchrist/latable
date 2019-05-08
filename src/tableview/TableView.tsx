@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Table} from 'antd';
-import {DomainEntity, Key} from "../domain/Domain";
+import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
 import {TableProps} from "antd/es/table";
 
@@ -13,8 +13,6 @@ export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
 export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T | undefined>;
 export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
-
-export type Keys = string[] | number[];
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -65,7 +63,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         onInsert(selectedItem).then( insertedItem => {
             if (insertedItem) {
                 setDataSource([...dataSource, insertedItem]);
-                selectRow(insertedItem)
+                selectionModel.set([insertedItem.key])
             }
         });
     }
@@ -79,7 +77,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     let data = [...dataSource];
                     data[selectedIndex] = updatedItem;
                     setDataSource(data);
-                    selectRow(updatedItem);
+                    selectionModel.set([updatedItem.key])
                 }
             });
         }
@@ -101,7 +99,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     // calculate appropriate selection index
                     itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
                     let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
-                    setSelectedRowKeys(selection);
+                    selectionModel.set(selection);
                 }
             })
         }

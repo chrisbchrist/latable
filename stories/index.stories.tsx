@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
+import React from 'react';
 
 import {storiesOf} from '@storybook/react';
 import TableView from '../src/tableview/TableView';
 import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import {Divider, Form, Input, Modal, Radio} from "antd";
-import {DomainEntity} from "../src/domain/Domain";
+import {Divider, Modal} from "antd";
 import {renderInModal} from "../src/modal/ModalContaner";
+import PersonForm, {Person} from "./PersonForm";
 // import {linkTo} from '@storybook/addon-links';
 const uuid4 = require('uuid/v4');
 
@@ -29,12 +29,6 @@ const columns = [{
 function age( bd: Date ): number {
     var diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
     return Math.abs(Math.floor(diff/365.25));
-}
-
-interface Person extends DomainEntity{
-    firstName: string,
-    lastName: string,
-    age: number,
 }
 
 const data: Person[] = [
@@ -86,37 +80,6 @@ function confirmRemoval( person: Person): Promise<boolean> {
 
 }
 
-const personForm = (
-    <Form layout="vertical">
-        <Form.Item label="Title">
-            {/*{getFieldDecorator('title', {*/}
-            {/*    rules: [{ required: true, message: 'Please input the title of collection!' }],*/}
-            {/*})(*/}
-            {/*    <Input />*/}
-            {/*)}*/}
-            <Input />
-        </Form.Item>
-        <Form.Item label="Description">
-            {/*{getFieldDecorator('description')(<Input type="textarea" />)}*/}
-            <Input type="textarea" />
-        </Form.Item>
-        <Form.Item className="collection-create-form_last-form-item">
-            {/*{getFieldDecorator('modifier', {*/}
-            {/*    initialValue: 'public',*/}
-            {/*})(*/}
-            {/*    <Radio.Group>*/}
-            {/*        <Radio value="public">Public</Radio>*/}
-            {/*        <Radio value="private">Private</Radio>*/}
-            {/*    </Radio.Group>*/}
-            {/*)}*/}
-            <Radio.Group>
-                <Radio value="public">Public</Radio>
-                <Radio value="private">Private</Radio>
-            </Radio.Group>
-        </Form.Item>
-    </Form>
-);
-
 
 function insertItem( person?: Person ): Promise<Person> {
 
@@ -125,7 +88,7 @@ function insertItem( person?: Person ): Promise<Person> {
         let newPerson = person ? {...person, key: uuid4(), firstName: person.firstName + " +"} :
             {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0};
 
-        renderInModal( personForm,{
+        renderInModal( <PersonForm {...person}/>,{
             title   : 'Insert Person',
             okText  : 'Create',
             onOk    : () => resolve(newPerson),
@@ -141,7 +104,7 @@ function updateItem( person: Person ): Promise<Person> {
 
         let updatedPerson = {...person, age: person.age + 10, firstName: person.firstName + " ^"};
 
-        renderInModal( personForm,{
+        renderInModal( <PersonForm {...person} />,{
             title   : 'Update Person',
             okText  : 'Update',
             onOk    : () => resolve(updatedPerson),

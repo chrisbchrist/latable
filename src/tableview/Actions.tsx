@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {OnInsertCallback, OnRemoveCallback, OnUpdateCallback, TableViewContext} from "./TableView"
+import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
 
@@ -14,12 +14,14 @@ function TableAction<T extends DomainEntity, P extends ActionButtonProps >( conf
     const { perform, isValid, doPerform, ...otherProps } = config;
 
     return (
+
         <ActionButton
             perform={() => perform? perform(): doPerform(context)}
             verbose={context.verboseToolbar}
             disabled={!isValid(context)}
             {...otherProps}
         />
+
     );
 
 }
@@ -41,7 +43,7 @@ export function RefreshTableAction<T extends DomainEntity>(props: TableActionPro
 }
 
 export interface InsertTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onInsert: OnInsertCallback<T>
+    onInsert: InsertCallback<T>
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
@@ -57,7 +59,7 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
 }
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onUpdate: OnUpdateCallback<T>
+    onUpdate: UpdateCallback<T>
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
@@ -69,7 +71,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
             text="Edit"
             icon="edit"
             isValid={ctx => ctx.selectedRowKeys.length == 1 && customIsValid}
-            doPerform={ctx => ctx.updateSelectedItem( props.onUpdate)}
+            doPerform={ctx => ctx.updateSelectedItem(props.onUpdate)}
             {...props}
         />
     );
@@ -77,7 +79,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onRemove: OnRemoveCallback<T>
+    onRemove: RemoveCallback<T>
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
@@ -93,5 +95,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
             doPerform = { ctx => ctx.removeSelectedItem(props.onRemove) }
         />
     );
+
+
 
 }

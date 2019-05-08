@@ -1,4 +1,4 @@
-import React, {ReactNode, useState} from 'react';
+import React, {useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
@@ -10,21 +10,19 @@ export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     loadData?: () => T[];         // function to load data into the table
 }
 
-export type OnInsertCallback<T extends DomainEntity> = (item?: T) => T | undefined;
-export type OnUpdateCallback<T extends DomainEntity> = (item: T, presentUI: (children: ReactNode[]) => void,  onComplete:(result: T|undefined)=>void) => void;
-export type OnRemoveCallback<T extends DomainEntity> = (item: T, onComplete:(success: boolean)=>void ) => void;
+export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
+export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T | undefined>;
+export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
 
 export type Keys = string[] | number[];
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
     verboseToolbar?: boolean;
-
     refreshData: () => void;
-    insertSelectedItem: (onInsert: OnInsertCallback<T>) => void;
-    updateSelectedItem: (onUpdate: OnUpdateCallback<T>) => void;
-    removeSelectedItem: (onRemove: OnRemoveCallback<T>) => void;
-
+    insertSelectedItem: (onInsert: InsertCallback<T>) => void;
+    updateSelectedItem: (onUpdate: UpdateCallback<T>) => void;
+    removeSelectedItem: (onRemove: RemoveCallback<T>) => void;
 }
 
 export const TableViewContext = React.createContext<any>({});
@@ -35,7 +33,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
     const [loading, setLoading]                 = useState(false);
-    const [customChildren, setCustomChildren]   = useState<ReactNode[]>([]);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,
@@ -63,45 +60,40 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
-    function insertSelectedItem( onInsert: OnInsertCallback<T> ) {
+    function insertSelectedItem( onInsert: InsertCallback<T> ) {
         const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0] as Key);
-        const insertedItem = onInsert(selectedItem);
-        if ( insertedItem ) {
-            setDataSource([...dataSource, insertedItem]);
-            selectRow(insertedItem)
-        }
+        onInsert(selectedItem).then( insertedItem => {
+            if (insertedItem) {
+                setDataSource([...dataSource, insertedItem]);
+                selectRow(insertedItem)
+            }
+        });
     }
 
-    function updateSelectedItem( onUpdate: OnUpdateCallback<T>) {
+    function updateSelectedItem( onUpdate: UpdateCallback<T>) {
         if ( selectionModel.isEmpty()) return;
         let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( selectedIndex >= 0 ) {
-            console.log('TableView: Starting item update at index ' + selectedIndex);
-            onUpdate( dataSource[selectedIndex], setCustomChildren, (updatedItem) => {
+            onUpdate(dataSource[selectedIndex]).then( updatedItem => {
                 if (updatedItem) {
                     let data = [...dataSource];
                     data[selectedIndex] = updatedItem;
                     setDataSource(data);
                     selectRow(updatedItem);
-                    console.log('TableView: Item updated successfully');
-                } else {
-                    console.log('TableView: Item update canceled');
-
                 }
             });
         }
     }
 
-    function removeSelectedItem( onRemove: OnRemoveCallback<T> ) {
+    function removeSelectedItem( onRemove: RemoveCallback<T> ) {
 
         if ( selectionModel.isEmpty() ) return;
 
         let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
-            console.log('TableView: Starting item removal at index ' + itemIndex);
-            onRemove( dataSource[itemIndex], ( success) => {
-                if ( success) {
+            onRemove( dataSource[itemIndex] ).then( shouldRemove => {
+                if ( shouldRemove) {
                     let data = [...dataSource];
                     data.splice(itemIndex, 1);
                     setDataSource(data);
@@ -110,12 +102,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
                     let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
                     setSelectedRowKeys(selection);
-                    console.log('TableView: Item removed successfully');
-                } else {
-                    console.log('TableView: Item removal canceled');
                 }
-            });
-
+            })
         }
     }
 
@@ -153,7 +141,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     onClick: () => selectRow(record),
                 })}
             />
-            {customChildren}
         </TableViewContext.Provider>
     )
 

@@ -17,15 +17,14 @@ function PersonFormImpl( props: any) {
 
     // context.setLoading(true);
 
-    let {getFieldDecorator, validateFields} = props.form;
+    let {getFieldDecorator, getFieldsError} = props.form;
 
-    // validateFields((err: any, values: any) => {
-    //     context.setOkDisabled(err);
-    //     // if (!err) {
-    //     //     const { name } = values;
-    //     //     addGroup({ name, urls });
-    //     // }
-    // });
+    context.setOkDisabled( hasErrors(getFieldsError));
+
+    function hasErrors(fieldsError: any ): boolean {
+        return Object.keys(fieldsError).some( field => fieldsError[field]);
+    }
+
 
     const nameValidationRules = {
         validateFirst: true, // stop validation of first error

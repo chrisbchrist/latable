@@ -20,6 +20,7 @@ function ModalContainer( props: ModalContainerProps ) {
     const [modalVisible, setModalVisible] = useState<boolean>(true);
     const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
     const [okDisabled, setOkDisabled] = useState<boolean>(false);
+    // const [onCreate, setOnCreate] = useState( () => void );
 
     function closeModal( e: React.MouseEvent<any>, closeOp?: (e: React.MouseEvent<any>) => void ): void {
         setModalVisible(false);
@@ -63,17 +64,20 @@ export default class Modals {
      */
     public static show(content: ReactElement, props?: ModalProps): void {
 
-        let div = document.createElement('div');
-        document.body.appendChild(div);
+        let modalParent = document.createElement('modalParent');
+        document.body.appendChild(modalParent);
 
         function destroyElement() {
-            let unmountResult = ReactDOM.unmountComponentAtNode(div);
-            if (unmountResult && div.parentNode) {
-                div.parentNode.removeChild(div);
+            let unmountResult = ReactDOM.unmountComponentAtNode(modalParent);
+            if (unmountResult && modalParent.parentNode) {
+                modalParent.parentNode.removeChild(modalParent);
             }
         }
 
-        ReactDOM.render(<ModalContainer {...props} children={content} cleanup={destroyElement}/>, div);
+        ReactDOM.render(
+            <ModalContainer {...props} children={content} cleanup={destroyElement} />,
+            modalParent
+        );
     }
 
     /**
@@ -84,13 +88,11 @@ export default class Modals {
     public static confirm(props: ModalFuncProps): Promise<boolean> {
         return new Promise<boolean>((resolve) => {
             Modal.confirm({
-                // title: 'Delete selected Item?',
-                // content: 'Some descriptions here',
                 okText: 'Yes',
                 okType: 'danger',
                 cancelText: 'No',
                 ...props,
-                onOk: () => resolve(true),
+                onOk    : () => resolve(true),
                 onCancel: () => resolve(false),
             })
         });

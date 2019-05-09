@@ -114,7 +114,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
-    //TODO pass down table actionProps
     return (
 
         <TableViewContext.Provider value={context}>

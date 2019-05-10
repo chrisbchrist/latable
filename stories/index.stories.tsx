@@ -152,7 +152,7 @@ storiesOf('TableView', module)
         return (
             <TableView columns={columns}
                        verboseToolbar={true}
-                       loadData={retrieveData} >
+                       loadData={retrieveData}>
                 <RefreshTableAction iconProps={{spin:true}}/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}

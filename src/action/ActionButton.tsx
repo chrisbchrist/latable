@@ -11,7 +11,7 @@ export interface ActionButtonProps extends BaseButtonProps {
     disabled?: boolean;
     iconProps?: IconProps;
     verbose?: boolean,
-    perform? :() => void
+    perform :() => void
 }
 
 
@@ -20,14 +20,12 @@ export const ActionButton = (props: ActionButtonProps) => {
     const { icon, disabled, description, iconProps, verbose, perform, ...otherProps } = props;
     const text = props.text ? props.text : "???";
 
-    const doPerform = () => { if (perform) perform() };
-
     return (
         <Tooltip placement="bottom" title={description ? description : text}>
             <Button className="toolbar-button"
                     disabled={disabled}
                     {...otherProps}
-                    onClick={doPerform}
+                    onClick={perform}
             >
                 {icon ? <Icon {...iconProps} type={icon}/> : null}
                 {verbose ? text : null}

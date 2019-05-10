@@ -2,40 +2,40 @@ import React, {useContext} from 'react';
 import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
+import {Omit} from "antd/es/_util/type";
 
-interface TableActionConfig<T extends DomainEntity> extends ActionButtonProps {
-    isValid: (ctx: TableViewContext<T>)=>boolean,
-    doPerform: (ctx: TableViewContext<T>)=>void,
+// Excludes perform property since it should be defined internally by each table action
+interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
+    isValid?: () => boolean // custom validation rule
 }
 
-function TableAction<T extends DomainEntity, P extends ActionButtonProps >( config: TableActionConfig<T> ) {
+interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
+    isCtxValid?: (ctx: TableViewContext<T>) => boolean,
+    doPerform  : (ctx: TableViewContext<T>) => void,
+}
+
+function TableAction<T extends DomainEntity>( config: TableActionConfig<T> ) {
 
     const context = useContext(TableViewContext);
-    const { perform, isValid, doPerform, ...otherProps } = config;
+    const { isCtxValid, isValid, doPerform, ...otherProps } = config;
+    const enabled = ( !isCtxValid || isCtxValid(context) ) && ( !isValid || isValid() );
 
     return (
-
         <ActionButton
-            perform={() => perform? perform(): doPerform(context)}
+            perform={() => doPerform(context)}
             verbose={context.verboseToolbar}
-            disabled={!isValid(context)}
+            disabled={ !enabled }
             {...otherProps}
         />
-
     );
 
 }
 
-interface TableActionProps extends ActionButtonProps {
-    isValid?: () => boolean
-}
-
 export function RefreshTableAction<T extends DomainEntity>(props: TableActionProps) {
     return (
-        <TableAction<T, ActionButtonProps>
+        <TableAction<T>
             text="Refresh"
             icon="sync"
-            isValid={ () => !props.isValid || props.isValid() }
             doPerform={ctx => ctx.refreshData()}
             {...props}
         />
@@ -48,10 +48,9 @@ export interface InsertTableActionProps<T extends DomainEntity> extends TableAct
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
     return (
-        <TableAction<T, InsertTableActionProps<T>>
+        <TableAction<T>
             text="Insert"
             icon="plus"
-            isValid={() => !props.isValid || props.isValid()}
             doPerform={ctx => ctx.insertSelectedItem(props.onInsert)}
             {...props}
         />
@@ -63,19 +62,15 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
-
-    let customIsValid: boolean = !props.isValid || props.isValid();
-
     return (
-        <TableAction<T, UpdateTableActionProps<T>>
+        <TableAction<T>
             text="Edit"
             icon="edit"
-            isValid={ctx => ctx.selectedRowKeys.length == 1 && customIsValid}
-            doPerform={ctx => ctx.updateSelectedItem(props.onUpdate)}
+            isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
+            doPerform={ ctx => ctx.updateSelectedItem(props.onUpdate) }
             {...props}
         />
     );
-
 }
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
@@ -83,19 +78,13 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
-
-    let customIsValid: boolean = !props.isValid || props.isValid();
-
     return (
-        <TableAction<T, UpdateTableActionProps<T>>
+        <TableAction<T>
             text="Delete"
             icon="delete"
             {...props}
-            isValid   = { ctx => ctx.selectedRowKeys.length == 1  && customIsValid }
+            isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 }
             doPerform = { ctx => ctx.removeSelectedItem(props.onRemove) }
         />
     );
-
-
-
 }

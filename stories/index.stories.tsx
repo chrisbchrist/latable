@@ -82,19 +82,19 @@ function confirmRemoval( person: Person ): Promise<boolean> {
 }
 
 
-function insertItem( person?: Person ): Promise<Person> {
+async function insertItem( person?: Person ): Promise<Person> {
 
     return new Promise<Person>( (resolve) => {
 
-        let newPerson = person ? {...person, key: uuid4(), firstName: person.firstName + " +"} :
-            {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession:'Unknown'};
+        let newPerson = person ? {...person, key: uuid4(), firstName: person!.firstName + " +"} :
+            {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession: 'Unknown'};
 
-        Modals.show( <PersonForm {...person}/>,{
-            title   : 'Insert Person',
-            okText  : 'Create',
-            onOk    : () => resolve(newPerson),
+        Modals.show(<PersonForm {...person}/>, {
+            title: 'Insert Person',
+            okText: 'Create',
+            onOk: () =>  resolve(newPerson),
             onCancel: () => resolve(undefined),
-        } )
+        })
 
     });
 }
@@ -157,12 +157,11 @@ storiesOf('TableView', module)
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
                                    icon={'plus-circle'}
-                                   buttonProps={{ type: 'primary', shape: 'round'}}
+                                   type={'primary'}
+                                   shape={'round'}
                                    onInsert= {insertItem} />
-                <UpdateTableAction onUpdate= {updateItem}
-                                   buttonProps={{ type: 'dashed' }}/>
-                <RemoveTableAction onRemove={confirmRemoval}
-                                   buttonProps={{ type: 'danger' }}/>
+                <UpdateTableAction onUpdate= {updateItem} type={'dashed' } />
+                <RemoveTableAction onRemove={confirmRemoval} type={'danger'} />
             </TableView>
         )
 

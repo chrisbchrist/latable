@@ -18,6 +18,8 @@ function TableAction<T extends DomainEntity>( config: TableActionConfig<T> ) {
 
     const context = useContext(TableViewContext);
     const { isCtxValid, isValid, doPerform, ...otherProps } = config;
+
+    // Combines core action validation with custom one
     const enabled = ( !isCtxValid || isCtxValid(context) ) && ( !isValid || isValid() );
 
     return (

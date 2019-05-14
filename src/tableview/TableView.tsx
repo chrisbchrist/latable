@@ -6,7 +6,7 @@ import {TableProps} from "antd/es/table";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     verboseToolbar?: boolean;     // show titles of the action buttons
-    multipleSelection?: boolean;  // allow mutiple selection
+    multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
 }
 
@@ -63,6 +63,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         onInsert(selectedItem).then( insertedItem => {
             if (insertedItem) {
                 setDataSource([...dataSource, insertedItem]);
+                // select newly inserted item
                 selectionModel.set([insertedItem.key])
             }
         });
@@ -77,6 +78,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     let data = [...dataSource];
                     data[selectedIndex] = updatedItem;
                     setDataSource(data);
+
+                    // make sure selection stays on the same item
                     selectionModel.set([updatedItem.key])
                 }
             });

@@ -64,7 +64,7 @@ export default class Modals {
      */
     public static show(content: ReactElement, props?: ModalProps): void {
 
-        let modalParent = document.createElement('modalParent');
+        let modalParent = document.createElement('div');
         document.body.appendChild(modalParent);
 
         function destroyElement() {

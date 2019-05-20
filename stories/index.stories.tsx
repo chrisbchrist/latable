@@ -9,8 +9,9 @@ import TableView from '../src/tableview/TableView';
 import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAction} from "../src/tableview/Actions";
 
 import '../src/indigo.css';
-import PersonForm, {Person} from "./PersonForm";
+import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
+import {PersonFormik, Person} from "./PersonFormik";
 // import {linkTo} from '@storybook/addon-links';
 
 //TODO derive columns from domain entity
@@ -78,6 +79,7 @@ function confirmRemoval( person: Person ): Promise<boolean> {
     return Modals.confirm({
         title: 'Delete selected Item?',
         content: 'Some descriptions here',
+        okType: 'primary'
     });
 }
 
@@ -89,7 +91,7 @@ async function insertItem( person?: Person ): Promise<Person> {
         let newPerson = person ? {...person, key: uuid4(), firstName: person!.firstName + " +"} :
             {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession: 'Unknown'};
 
-        Modals.show(<PersonForm {...person}/>, {
+        Modals.show(<PersonFormik {...person}/>, {
             title: 'Insert Person',
             okText: 'Create',
             onOk: () =>  resolve(newPerson),
@@ -153,7 +155,7 @@ storiesOf('TableView', module)
             <TableView columns={columns}
                        verboseToolbar={true}
                        loadData={retrieveData}>
-                <RefreshTableAction iconProps={{spin:true}}/>
+                <RefreshTableAction iconProps={{spin:false}}/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
                                    icon={'plus-circle'}

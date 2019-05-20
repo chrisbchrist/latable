@@ -4,14 +4,14 @@ import {DomainEntity} from "../src/domain/Domain";
 import {TableViewContext} from "../src/tableview/TableView";
 import {ModalContainerContext} from "../src/modal/ModalContaner";
 
-export interface Person extends DomainEntity{
-    firstName: string,
-    lastName: string,
-    age: number,
-    profession: string,
-}
+// export interface Person extends DomainEntity{
+//     firstName: string,
+//     lastName: string,
+//     age: number,
+//     profession: string,
+// }
 
-function PersonFormImpl( props: any) {
+function PersonForm( props: any) {
 
     const context = useContext(ModalContainerContext);
 
@@ -56,5 +56,5 @@ function PersonFormImpl( props: any) {
 
 }
 
-export default Form.create({name:"PersonForm"})(PersonFormImpl);
+export default Form.create({name:"PersonForm"})(PersonForm);
 

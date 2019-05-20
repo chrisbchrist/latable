@@ -1,5 +1,5 @@
 @import '~antd/dist/antd.min.css';
 
-.toolbar-button {
-    margin-right: 1mm;
-}
+.action-button {
+     margin-right: 1mm;
+ }

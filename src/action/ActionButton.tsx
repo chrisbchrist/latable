@@ -22,12 +22,12 @@ export const ActionButton = (props: ActionButtonProps) => {
 
     return (
         <Tooltip placement="bottom" title={description ? description : text}>
-            <Button className="toolbar-button"
+            <Button className="action-button"
                     disabled={disabled}
                     {...otherProps}
                     onClick={perform}
             >
-                {icon ? <Icon {...iconProps} type={icon}/> : null}
+                {icon ? <Icon {...iconProps} type={icon}/> : undefined}
                 {verbose ? text : null}
             </Button>
         </Tooltip>

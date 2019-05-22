@@ -1,3 +1,5 @@
+import set = Reflect.set;
+
 export default interface SelectionModel<T> {
 
     isEmpty(): boolean

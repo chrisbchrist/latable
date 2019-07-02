@@ -2,7 +2,10 @@ import React, {useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
-import {TableProps} from "antd/es/table";
+import {ColumnProps, TableProps} from "antd/es/table";
+import Menu from "antd/es/menu";
+import Dropdown from "antd/es/dropdown";
+import {ActionMenuItem} from "../action/ActionButton";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     verboseToolbar?: boolean;     // show titles of the action buttons
@@ -117,12 +120,36 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
+
+    function menu() {
+        return (
+            <Menu>
+            <ActionMenuItem icon="user"    text="Yea"      perform={ () => console.log("1")}/>
+            <ActionMenuItem icon="heart-o" text="Like it"  perform={ () => console.log("2")}/>
+            <ActionMenuItem icon="star-o"  text="Bookmark" perform={ () => console.log("3")}/>
+            </Menu>
+        )
+    }
+
+    function render(value:any) {
+        return (
+            <Dropdown overlay={menu()} trigger={[`contextMenu`]}>
+                <div>{value}</div>
+            </Dropdown>
+        )
+    }
+
+    // TODO: Make check for undefined more efficient
+    let columns: ColumnProps<T>[] = (props.columns? props.columns: []);
+    columns = columns.map( c => ( { ...c, render: render} ) );
+
+
     return (
 
         <TableViewContext.Provider value={context}>
             <Table
                 {... props}
-                columns={props.columns}
+                columns={columns}
                 pagination={false}
                 loading={loading}
                 title={() =>
@@ -139,6 +166,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 }}
                 onRow={(record) => ({
                     onClick: () => selectRow(record),
+                    onContextMenu: () => selectRow(record),
                 })}
             />
         </TableViewContext.Provider>

@@ -11,8 +11,7 @@ import {InsertTableAction, RefreshTableAction, RemoveTableAction, UpdateTableAct
 import '../src/indigo.css';
 import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
-import {PersonFormik, Person} from "./PersonFormik";
-// import {linkTo} from '@storybook/addon-links';
+import {Person} from "./PersonFormik";
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -91,7 +90,7 @@ async function insertItem( person?: Person ): Promise<Person> {
         let newPerson = person ? {...person, key: uuid4(), firstName: person!.firstName + " +"} :
             {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession: 'Unknown'};
 
-        Modals.show(<PersonFormik {...person}/>, {
+        Modals.show(<PersonForm {...person}/>, {
             title: 'Insert Person',
             okText: 'Create',
             onOk: () =>  resolve(newPerson),
@@ -126,11 +125,12 @@ storiesOf('TableView', module)
     .addDecorator(story => <div style={{ padding: '1rem' }}>{story()}</div>)
 
     .add('with standard toolbar', () => {
+
         return (
-            <TableView columns={columns} loadData={retrieveData} >
-                <RefreshTableAction />
+            <TableView columns={columns} loadData={retrieveData}>
+                <RefreshTableAction/>
                 <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={insertItem} />
+                <InsertTableAction onInsert={insertItem}/>
                 <UpdateTableAction onUpdate={updateItem}/>
                 <RemoveTableAction onRemove={confirmRemoval}/>
             </TableView>
@@ -152,7 +152,7 @@ storiesOf('TableView', module)
     .add('with custom toolbar button properties', () => {
 
         return (
-            <TableView columns={columns}
+            <TableView columns={columns} style={{ userSelect: 'none' }}
                        verboseToolbar={true}
                        loadData={retrieveData}>
                 <RefreshTableAction iconProps={{spin:false}}/>

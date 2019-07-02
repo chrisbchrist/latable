@@ -5,7 +5,7 @@ import {DomainEntity} from "../domain/Domain";
 import {Omit} from "antd/es/_util/type";
 
 // Excludes perform property since it should be defined internally by each table action
-interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
+export interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
     isValid?: () => boolean // custom validation rule
 }
 

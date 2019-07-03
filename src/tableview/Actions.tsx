@@ -44,6 +44,8 @@ export function RefreshTableAction<T extends DomainEntity>(props: TableActionPro
     );
 }
 
+export interface RefreshTableAction extends ReturnType<typeof RefreshTableAction> {}
+
 export interface InsertTableActionProps<T extends DomainEntity> extends TableActionProps {
     onInsert: InsertCallback<T>
 }
@@ -58,6 +60,8 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
         />
     );
 }
+
+export interface InsertTableAction extends ReturnType<typeof InsertTableAction> {}
 
 export interface UpdateTableActionProps<T extends DomainEntity> extends TableActionProps {
     onUpdate: UpdateCallback<T>
@@ -75,6 +79,8 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
     );
 }
 
+export interface UpdateTableAction extends ReturnType<typeof UpdateTableAction> {}
+
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
     onRemove: RemoveCallback<T>
 }
@@ -90,3 +96,5 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
         />
     );
 }
+
+export interface RemoveTableAction extends ReturnType<typeof RemoveTableAction> {}

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
@@ -121,7 +121,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     };
 
 
-    function menu() {
+    function buildMenu() {
         return (
             <Menu>
             <ActionMenuItem icon="user"    text="Yea"      perform={ () => console.log("1")}/>
@@ -131,18 +131,20 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         )
     }
 
+    const menu = buildMenu();
+
+    // Renders values of table with context menu
     function render(value:any) {
+        //TODO
         return (
-            <Dropdown overlay={menu()} trigger={[`contextMenu`]}>
+            <Dropdown overlay={menu} trigger={[`contextMenu`]}>
                 <div>{value}</div>
             </Dropdown>
         )
     }
 
-    // TODO: Make check for undefined more efficient
-    let columns: ColumnProps<T>[] = (props.columns? props.columns: []);
-    columns = columns.map( c => ( { ...c, render: render} ) );
-
+    // Replace rendering of the table values to show context menu
+    let columns = !props.columns? undefined: props.columns.map( c => ({ ...c, render: render}) );
 
     return (
 

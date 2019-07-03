@@ -35,6 +35,8 @@ export const ActionButton = (props: ActionButtonProps) => {
     );
 };
 
+export interface ActionButton extends ReturnType<typeof ActionButton> {}
+
 export const ActionMenuItem = (props: ActionButtonProps) => {
 
     const { icon, disabled, description, iconProps, verbose, perform, ...otherProps } = props;
@@ -51,6 +53,8 @@ export const ActionMenuItem = (props: ActionButtonProps) => {
             </MenuItem>
     );
 };
+
+export interface ActionMenuItem extends ReturnType<typeof ActionMenuItem> {}
 
 
 export default React.memo(ActionButton);

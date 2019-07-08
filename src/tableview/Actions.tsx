@@ -1,12 +1,13 @@
 import React, {useContext} from 'react';
 import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "./TableView"
-import ActionButton, {ActionButtonProps} from "../action/ActionButton";
+import ActionButton, {ActionButtonProps, ActionMenuItem} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
 import {Omit} from "antd/es/_util/type";
 
 // Excludes perform property since it should be defined internally by each table action
 export interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
     isValid?: () => boolean // custom validation rule
+    setMenuVisible?: (visible: boolean) => void // callback to hide context menu
 }
 
 interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
@@ -14,28 +15,44 @@ interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
     doPerform  : (ctx: TableViewContext<T>) => void,
 }
 
-function TableAction<T extends DomainEntity>( config: TableActionConfig<T> ) {
+function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> ) {
 
     const context = useContext(TableViewContext);
-    const { isCtxValid, isValid, doPerform, ...otherProps } = config;
+    const { isCtxValid, isValid, doPerform, setMenuVisible, ...otherProps } = config;
 
     // Combines core action validation with custom one
     const enabled = ( !isCtxValid || isCtxValid(context) ) && ( !isValid || isValid() );
 
-    return (
-        <ActionButton
+    if ( setMenuVisible == undefined ) {
+
+        return <ActionButton
             perform={() => doPerform(context)}
             verbose={context.verboseToolbar}
-            disabled={ !enabled }
+            disabled={!enabled}
             {...otherProps}
         />
-    );
+
+    } else {
+
+        return <ActionMenuItem
+            perform={() => {
+                setMenuVisible(false);
+                doPerform(context);
+            }}
+            verbose={true}
+            disabled={!enabled}
+            {...otherProps}
+        />
+    }
+
 
 }
 
+export type TableAction = RefreshTableAction | InsertTableAction | UpdateTableAction | RemoveTableAction
+
 export function RefreshTableAction<T extends DomainEntity>(props: TableActionProps) {
     return (
-        <TableAction<T>
+        <TableActionBase<T>
             text="Refresh"
             icon="sync"
             doPerform={ctx => ctx.refreshData()}
@@ -52,7 +69,7 @@ export interface InsertTableActionProps<T extends DomainEntity> extends TableAct
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
     return (
-        <TableAction<T>
+        <TableActionBase<T>
             text="Insert"
             icon="plus"
             doPerform={ctx => ctx.insertSelectedItem(props.onInsert)}
@@ -69,7 +86,7 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends TableAct
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
     return (
-        <TableAction<T>
+        <TableActionBase<T>
             text="Edit"
             icon="edit"
             isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
@@ -87,7 +104,7 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends TableAct
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
     return (
-        <TableAction<T>
+        <TableActionBase<T>
             text="Delete"
             icon="delete"
             {...props}

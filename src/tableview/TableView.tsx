@@ -4,14 +4,14 @@ import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
 import {TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
-import {ActionMenuItem} from "../action/ActionButton";
-import {CellContextMenu} from "./CellContextMenu";
-import {message} from "antd/es";
+import {ContextMenuWrapper} from "./ContextMenuWrapper";
+import {TableAction} from "./Actions";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
+    children?: (TableAction | React.ReactNode)[]
 }
 
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
@@ -121,30 +121,32 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
+
+    function isTableAction( c: ReactNode ): boolean {
+        return c!.type.name.endsWith("TableAction")
+    }
+
     // Renders values of table with context menu
     function render(value:any) {
 
         function buildMenu( setMenuVisible: (visible: boolean) => void ) {
             return (
-                <Menu>
-                    <ActionMenuItem icon="user"    text="Yea"      perform={ () => {
-                        setMenuVisible(false);
-                        message.info('Action 1!!')
-                    }}/>
-                    <ActionMenuItem icon="heart-o" text="Like it"  perform={ () => {
-                        setMenuVisible(false);
-                        message.info('Action 2!!')
-                    }}/>
-                    <ActionMenuItem icon="star-o"  text="Bookmark" perform={ () => {
-                        setMenuVisible(false);
-                        message.info('Action 3!!')
-                    }}/>
+                <Menu >
+                    {
+                        React.Children.map( props.children, c => {
+                            if ( isTableAction(c) ) {//  c!.type.name.endsWith("TableAction") ) {
+                                return React.cloneElement( ( c as TableAction ), {setMenuVisible: setMenuVisible});
+                            } else {
+                                return null;
+                            }
+                        })
+                    }
                 </Menu>
             )
         }
 
         return (
-            <CellContextMenu value={value} buildMenu={buildMenu}/>
+            <ContextMenuWrapper value={value} buildMenu={buildMenu}/>
         )
     }
 

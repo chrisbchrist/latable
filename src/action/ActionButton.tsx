@@ -4,6 +4,7 @@ import {Button, Icon, Tooltip} from 'antd';
 import {BaseButtonProps} from "antd/es/button/button";
 import {IconProps} from "antd/es/icon";
 import MenuItem from "antd/es/menu/MenuItem";
+import uuid from "uuid";
 
 export interface ActionButtonProps extends BaseButtonProps {
     text?: string;
@@ -43,10 +44,15 @@ export const ActionMenuItem = (props: ActionButtonProps) => {
     const text = props.text ? props.text : "???";
 
     return (
-            <MenuItem className="action-menu"
+            <MenuItem
+                    key={uuid()}
+                    className="action-menu"
                     disabled={disabled}
                     {...otherProps}
-                    onClick={perform}
+                    onClick={ e => {
+                        e.domEvent.stopPropagation();
+                        perform();
+                    }}
             >
                 {icon ? <Icon {...iconProps} type={icon}/> : undefined}
                 {text}

@@ -2,10 +2,11 @@ import React, {ReactNode, useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
-import {ColumnProps, TableProps} from "antd/es/table";
+import {TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
-import Dropdown from "antd/es/dropdown";
 import {ActionMenuItem} from "../action/ActionButton";
+import {CellContextMenu} from "./CellContextMenu";
+import {message} from "antd/es";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
     verboseToolbar?: boolean;     // show titles of the action buttons
@@ -120,26 +121,30 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
-
-    function buildMenu() {
-        return (
-            <Menu>
-            <ActionMenuItem icon="user"    text="Yea"      perform={ () => console.log("1")}/>
-            <ActionMenuItem icon="heart-o" text="Like it"  perform={ () => console.log("2")}/>
-            <ActionMenuItem icon="star-o"  text="Bookmark" perform={ () => console.log("3")}/>
-            </Menu>
-        )
-    }
-
-    const menu = buildMenu();
-
     // Renders values of table with context menu
     function render(value:any) {
-        //TODO
+
+        function buildMenu( setMenuVisible: (visible: boolean) => void ) {
+            return (
+                <Menu>
+                    <ActionMenuItem icon="user"    text="Yea"      perform={ () => {
+                        setMenuVisible(false);
+                        message.info('Action 1!!')
+                    }}/>
+                    <ActionMenuItem icon="heart-o" text="Like it"  perform={ () => {
+                        setMenuVisible(false);
+                        message.info('Action 2!!')
+                    }}/>
+                    <ActionMenuItem icon="star-o"  text="Bookmark" perform={ () => {
+                        setMenuVisible(false);
+                        message.info('Action 3!!')
+                    }}/>
+                </Menu>
+            )
+        }
+
         return (
-            <Dropdown overlay={menu} trigger={[`contextMenu`]}>
-                <div>{value}</div>
-            </Dropdown>
+            <CellContextMenu value={value} buildMenu={buildMenu}/>
         )
     }
 

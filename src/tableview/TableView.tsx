@@ -122,9 +122,12 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     };
 
 
-    function isTableAction( c: ReactNode ): boolean {
-        return c!.type.name.endsWith("TableAction")
+    // TODO Find a more reliable way to check the type
+    function isTableAction( c: any ): boolean {
+        // important c has to be of type `any` for compiler to be happy
+        return c.type.name.endsWith("TableAction")
     }
+
 
     // Renders values of table with context menu
     function render(value:any) {
@@ -134,11 +137,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 <Menu >
                     {
                         React.Children.map( props.children, c => {
-                            if ( isTableAction(c) ) {//  c!.type.name.endsWith("TableAction") ) {
-                                return React.cloneElement( ( c as TableAction ), {setMenuVisible: setMenuVisible});
-                            } else {
-                                return null;
-                            }
+                            return isTableAction(c)?
+                                React.cloneElement( ( c as TableAction ), {setMenuVisible: setMenuVisible}): null;
                         })
                     }
                 </Menu>

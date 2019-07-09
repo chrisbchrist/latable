@@ -44,19 +44,19 @@ export const ActionMenuItem = (props: ActionButtonProps) => {
     const text = props.text ? props.text : "???";
 
     return (
-            <MenuItem
-                    key={uuid()}
-                    className="action-menu"
-                    disabled={disabled}
-                    {...otherProps}
-                    onClick={ e => {
-                        e.domEvent.stopPropagation();
-                        perform();
-                    }}
-            >
-                {icon ? <Icon {...iconProps} type={icon}/> : undefined}
-                {text}
-            </MenuItem>
+        <MenuItem
+            key={uuid()}
+            className="action-menu"
+            disabled={disabled}
+            {...otherProps}
+            onClick={e => {
+                e.domEvent.stopPropagation();
+                perform();
+            }}
+        >
+            {icon && <Icon {...iconProps} type={icon}/>}
+            {text}
+        </MenuItem>
     );
 };
 

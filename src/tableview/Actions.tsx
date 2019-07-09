@@ -3,11 +3,11 @@ import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "
 import ActionButton, {ActionButtonProps, ActionMenuItem} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
 import {Omit} from "antd/es/_util/type";
+import {ContextMenuDropdownContext} from "./ContextMenuDropdown";
 
 // Excludes perform property since it should be defined internally by each table action
 export interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
     isValid?: () => boolean // custom validation rule
-    setMenuVisible?: (visible: boolean) => void // callback to hide context menu
 }
 
 interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
@@ -17,13 +17,29 @@ interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
 
 function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> ) {
 
-    const context = useContext(TableViewContext);
-    const { isCtxValid, isValid, doPerform, setMenuVisible, ...otherProps } = config;
+    const context     = useContext(TableViewContext);
+    const menuContext = useContext(ContextMenuDropdownContext);
+
+    const { isCtxValid, isValid, doPerform, ...otherProps } = config;
 
     // Combines core action validation with custom one
     const enabled = ( !isCtxValid || isCtxValid(context) ) && ( !isValid || isValid() );
 
-    if ( setMenuVisible == undefined ) {
+    if ( menuContext ) {
+
+        // Show action as a menu item since it is withing menu context
+
+        return <ActionMenuItem
+            perform={() => {
+                menuContext.setMenuVisible(false);
+                doPerform(context);
+            }}
+            verbose={true}
+            disabled={!enabled}
+            {...otherProps}
+        />
+
+    } else {
 
         return <ActionButton
             perform={() => doPerform(context)}
@@ -32,17 +48,6 @@ function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> )
             {...otherProps}
         />
 
-    } else {
-
-        return <ActionMenuItem
-            perform={() => {
-                setMenuVisible(false);
-                doPerform(context);
-            }}
-            verbose={true}
-            disabled={!enabled}
-            {...otherProps}
-        />
     }
 
 

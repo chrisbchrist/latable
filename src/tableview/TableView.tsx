@@ -1,10 +1,10 @@
-import React, {ReactNode, useState} from 'react';
+import React, {useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
 import {TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
-import {ContextMenuWrapper} from "./ContextMenuWrapper";
+import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
@@ -129,25 +129,23 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
 
-    // Renders values of table with context menu
-    function render(value:any) {
-
-        function buildMenu( setMenuVisible: (visible: boolean) => void ) {
-            return (
-                <Menu >
-                    {
-                        React.Children.map( props.children, c => {
-                            return isTableAction(c)?
-                                React.cloneElement( ( c as TableAction ), {setMenuVisible: setMenuVisible}): null;
-                        })
-                    }
-                </Menu>
-            )
-        }
+    function buildMenu() {
 
         return (
-            <ContextMenuWrapper value={value} buildMenu={buildMenu}/>
+            <Menu>
+                {
+                    React.Children.map(props.children,c => {
+                        // TODO Show dividers, but only one if there multiple in the row
+                        return isTableAction(c) ? React.cloneElement((c as TableAction), {}) : null;//<Menu.Divider/>;
+                    })
+                }
+            </Menu>
         )
+    }
+
+    // Renders values of table with context menu
+    function render(value:any) {
+        return <ContextMenuDropdown value={value} buildMenu={buildMenu}/>
     }
 
     // Replace rendering of the table values to show context menu

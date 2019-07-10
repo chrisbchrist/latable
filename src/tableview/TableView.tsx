@@ -2,12 +2,13 @@ import React, {useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
-import {TableProps} from "antd/es/table";
+import {ColumnProps, TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
 import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
 
 export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
+    disableContextMenu?: boolean  // disables context action menu
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
@@ -31,7 +32,7 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([] as Keys);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar]                      = useState(props.verboseToolbar);
     const [loading, setLoading]                 = useState(false);
@@ -144,19 +145,25 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     // Renders values of table with context menu
-    function render(value:any) {
+    function renderCell(value:any) {
         return <ContextMenuDropdown value={value} buildMenu={buildMenu}/>
     }
 
+    function decoratedColumns(): ColumnProps<T>[] | undefined {
+        if ( props.disableContextMenu ) return props.columns;
+        // Replace rendering of the table values to show context menu
+        return props.columns && props.columns.map( c => ({ ...c, render: renderCell}) )
+    }
+
     // Replace rendering of the table values to show context menu
-    let columns = !props.columns? undefined: props.columns.map( c => ({ ...c, render: render}) );
+    // let columns = !props.columns? undefined: props.columns.map( c => ({ ...c, render: renderCell}) );
 
     return (
 
         <TableViewContext.Provider value={context}>
             <Table
                 {... props}
-                columns={columns}
+                columns={decoratedColumns()}
                 pagination={false}
                 loading={loading}
                 title={() =>

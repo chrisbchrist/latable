@@ -17,22 +17,22 @@ interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
 
 function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> ) {
 
-    const context     = useContext(TableViewContext);
-    const menuContext = useContext(ContextMenuDropdownContext);
+    const tableContext = useContext(TableViewContext);
+    const menuContext  = useContext(ContextMenuDropdownContext);
 
     const { isCtxValid, isValid, doPerform, ...otherProps } = config;
 
     // Combines core action validation with custom one
-    const enabled = ( !isCtxValid || isCtxValid(context) ) && ( !isValid || isValid() );
+    const enabled = ( !isCtxValid || isCtxValid(tableContext) ) && ( !isValid || isValid() );
 
     if ( menuContext ) {
 
-        // Show action as a menu item since it is withing menu context
+        // Show action as a menu item since it is withing menu tableContext
 
         return <ActionMenuItem
             perform={() => {
                 menuContext.setMenuVisible(false);
-                doPerform(context);
+                doPerform(tableContext);
             }}
             verbose={true}
             disabled={!enabled}
@@ -42,8 +42,8 @@ function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> )
     } else {
 
         return <ActionButton
-            perform={() => doPerform(context)}
-            verbose={context.verboseToolbar}
+            perform={() => doPerform(tableContext)}
+            verbose={tableContext.verboseToolbar}
             disabled={!enabled}
             {...otherProps}
         />

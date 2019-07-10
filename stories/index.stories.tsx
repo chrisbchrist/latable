@@ -2,6 +2,8 @@ import React from 'react';
 const uuid4 = require('uuid/v4');
 
 import {storiesOf} from '@storybook/react';
+import { withKnobs, boolean } from '@storybook/addon-knobs';
+
 
 import {Divider} from "antd";
 
@@ -119,15 +121,24 @@ function updateItem( person: Person ): Promise<Person> {
 
 const retrieveData: () => Person[] = () => data;
 
+const verboseToolbarTitle = 'Verbose Toolbar';
+const multipleSelectionTitle = 'Multiple Selection';
+const disableContextMenuTitle = 'Disable Context Menu';
 
 storiesOf('TableView', module)
 
+    .addDecorator(withKnobs)
     .addDecorator(story => <div style={{ padding: '1rem' }}>{story()}</div>)
 
     .add('with standard toolbar', () => {
 
+
         return (
-            <TableView columns={columns} loadData={retrieveData}>
+            <TableView columns={columns}
+                       loadData={retrieveData}
+                       verboseToolbar={boolean(verboseToolbarTitle, false)}
+                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
                 <RefreshTableAction/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem}/>
@@ -139,7 +150,10 @@ storiesOf('TableView', module)
 
     .add('with verbose toolbar', () => {
         return (
-            <TableView columns={columns} verboseToolbar={true} loadData={retrieveData}>
+            <TableView columns={columns} loadData={retrieveData}
+                       verboseToolbar={boolean(verboseToolbarTitle, true)}
+                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem}/>
@@ -153,8 +167,10 @@ storiesOf('TableView', module)
 
         return (
             <TableView columns={columns} style={{ userSelect: 'none' }}
-                       verboseToolbar={true}
-                       loadData={retrieveData}>
+                       loadData={retrieveData}
+                       verboseToolbar={boolean(verboseToolbarTitle, false)}
+                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
                 <RefreshTableAction iconProps={{spin:false}}/>
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction text={'Create'}
@@ -174,7 +190,10 @@ storiesOf('TableView', module)
         return (
             <TableView columns={columns}
                        bordered
-                       loadData={retrieveData} >
+                       loadData={retrieveData}
+                       verboseToolbar={boolean(verboseToolbarTitle, false)}
+                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
                 <RefreshTableAction />
                 <Divider type="vertical" dashed={true}/>
                 <InsertTableAction onInsert={insertItem} />
@@ -185,16 +204,5 @@ storiesOf('TableView', module)
 
     })
 
-    .add('with multiple row selection', () => {
-        return (
-            <TableView columns={columns} loadData={retrieveData} multipleSelection={true}>
-                <RefreshTableAction />
-                <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={insertItem}/>
-                <UpdateTableAction onUpdate={updateItem}/>
-                <RemoveTableAction onRemove={confirmRemoval}/>
-            </TableView>
-        )
-    })
 
 ;

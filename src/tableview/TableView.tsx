@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
@@ -34,8 +34,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
-    const [verboseToolbar]                      = useState(props.verboseToolbar);
+    const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
     const [loading, setLoading]                 = useState(false);
+
+    // Make sure toolbar verbosity can be changed dynamically
+    // Since verboseToolbar state is never called in the TableView component
+    // we have to force it on change of related prop
+    useEffect(() => {setVerboseToolbar(props.verboseToolbar)},[props.verboseToolbar]);
+
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,
@@ -154,9 +160,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         // Replace rendering of the table values to show context menu
         return props.columns && props.columns.map( c => ({ ...c, render: renderCell}) )
     }
-
-    // Replace rendering of the table values to show context menu
-    // let columns = !props.columns? undefined: props.columns.map( c => ({ ...c, render: renderCell}) );
 
     return (
 

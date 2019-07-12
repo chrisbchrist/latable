@@ -148,21 +148,6 @@ storiesOf('TableView', module)
         )
     })
 
-    .add('with verbose toolbar', () => {
-        return (
-            <TableView columns={columns} loadData={retrieveData}
-                       verboseToolbar={boolean(verboseToolbarTitle, true)}
-                       multipleSelection={boolean(multipleSelectionTitle, false)}
-                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
-                <RefreshTableAction />
-                <Divider type="vertical" dashed={true}/>
-                <InsertTableAction onInsert={insertItem}/>
-                <UpdateTableAction onUpdate={updateItem}/>
-                <RemoveTableAction onRemove={confirmRemoval}/>
-            </TableView>
-        )
-    })
-
     .add('with custom toolbar button properties', () => {
 
         return (

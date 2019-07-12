@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Button, Icon, Tooltip} from 'antd';
 
 import {BaseButtonProps} from "antd/es/button/button";
@@ -19,18 +19,18 @@ export interface ActionButtonProps extends BaseButtonProps {
 
 export const ActionButton = (props: ActionButtonProps) => {
 
-    const { icon, disabled, description, iconProps, verbose, perform, ...otherProps } = props;
+    const { icon, disabled, description, iconProps, perform, verbose, ...otherProps } = props;
     const text = props.text ? props.text : "???";
 
     return (
         <Tooltip placement="bottom" title={description ? description : text}>
-            <Button className="action-button"
+            <Button className="action-button" key={uuid()}
                     disabled={disabled}
                     {...otherProps}
                     onClick={perform}
             >
-                {icon ? <Icon {...iconProps} type={icon}/> : undefined}
-                {verbose ? text : null}
+                { icon && <Icon {...iconProps} type={icon}/> }
+                { verbose && text }
             </Button>
         </Tooltip>
     );
@@ -54,8 +54,8 @@ export const ActionMenuItem = (props: ActionButtonProps) => {
                 perform();
             }}
         >
-            {icon && <Icon {...iconProps} type={icon}/>}
-            {text}
+            { icon && <Icon {...iconProps} type={icon}/> }
+            { text }
         </MenuItem>
     );
 };

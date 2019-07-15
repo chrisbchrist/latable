@@ -135,6 +135,7 @@ storiesOf('TableView', module)
 
         return (
             <TableView columns={columns}
+                       pagination={false}
                        loadData={retrieveData}
                        verboseToolbar={boolean(verboseToolbarTitle, false)}
                        multipleSelection={boolean(multipleSelectionTitle, false)}
@@ -152,6 +153,7 @@ storiesOf('TableView', module)
 
         return (
             <TableView columns={columns} style={{ userSelect: 'none' }}
+                       pagination={false}
                        loadData={retrieveData}
                        verboseToolbar={boolean(verboseToolbarTitle, false)}
                        multipleSelection={boolean(multipleSelectionTitle, false)}
@@ -174,6 +176,7 @@ storiesOf('TableView', module)
 
         return (
             <TableView columns={columns}
+                       pagination={false}
                        bordered
                        loadData={retrieveData}
                        verboseToolbar={boolean(verboseToolbarTitle, false)}

@@ -6,8 +6,9 @@ import {ColumnProps, TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
 import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
+import {Omit} from "antd/es/_util/type";
 
-export interface TableViewProps<T extends DomainEntity> extends TableProps<T> {
+export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<T>, 'dataSource'> {
     disableContextMenu?: boolean  // disables context action menu
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
@@ -32,10 +33,12 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
+    const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
+
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
-    const [dataSource, setDataSource]           = useState<T[]>(props.loadData? props.loadData(): []);
+    const [tableData, setTableData]             = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
-    const [loading, setLoading]                 = useState(false);
+    const [isLoading, setLoading]               = useState(props.loading);
 
     // Make sure toolbar verbosity can be changed dynamically
     // Since verboseToolbar state is never called in the TableView component
@@ -55,14 +58,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     }
 
     function getItemByKey( key: Key): T | undefined {
-        return dataSource.find(e => e.key == key);
+        return tableData.find(e => e.key == key);
     }
 
     function refreshData() {
         if ( props.loadData ) {
             try {
                 setLoading(true);
-                setDataSource(props.loadData());
+                setTableData(props.loadData());
             } finally {
                 setLoading(false);
             }
@@ -73,7 +76,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0] as Key);
         onInsert(selectedItem).then( insertedItem => {
             if (insertedItem) {
-                setDataSource([...dataSource, insertedItem]);
+                setTableData([...tableData, insertedItem]);
                 // select newly inserted item
                 selectionModel.set([insertedItem.key])
             }
@@ -82,13 +85,13 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function updateSelectedItem( onUpdate: UpdateCallback<T>) {
         if ( selectionModel.isEmpty()) return;
-        let selectedIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
+        let selectedIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( selectedIndex >= 0 ) {
-            onUpdate(dataSource[selectedIndex]).then( updatedItem => {
+            onUpdate(tableData[selectedIndex]).then( updatedItem => {
                 if (updatedItem) {
-                    let data = [...dataSource];
+                    let data = [...tableData];
                     data[selectedIndex] = updatedItem;
-                    setDataSource(data);
+                    setTableData(data);
 
                     // make sure selection stays on the same item
                     selectionModel.set([updatedItem.key])
@@ -101,14 +104,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
         if ( selectionModel.isEmpty() ) return;
 
-        let itemIndex = dataSource.findIndex( item => item.key === selectedRowKeys[0]);
+        let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
-            onRemove( dataSource[itemIndex] ).then( shouldRemove => {
+            onRemove( tableData[itemIndex] ).then( shouldRemove => {
                 if ( shouldRemove) {
-                    let data = [...dataSource];
+                    let data = [...tableData];
                     data.splice(itemIndex, 1);
-                    setDataSource(data);
+                    setTableData(data);
 
                     // calculate appropriate selection index
                     itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
@@ -165,17 +168,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
         <TableViewContext.Provider value={context}>
             <Table
-                {... props}
+                {... otherProps}
                 columns={decoratedColumns()}
-                pagination={false}
-                loading={loading}
+                loading={isLoading}
                 title={() =>
                     <div>
                         {props.title}
                         {props.children}
                     </div>
                 }
-                dataSource={dataSource}
+                dataSource={tableData}
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
                     type: props.multipleSelection ? 'checkbox': 'radio',

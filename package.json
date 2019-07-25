@@ -1,13 +1,23 @@
 {
-  "name": "indigo",
+  "name": "@nextera/indigo",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "publishConfig": {
+    "registry": "http://pmisa2558:8081/repository/npm-internal/"
+  },
+  "peerDependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
   "dependencies": {
     "@types/node": "11.13.5",
     "@types/react": "16.8.14",
     "@types/react-dom": "16.8.4",
     "@types/uuid": "^3.4.5",
     "antd": "^3.20.0",
+    "cpx": "^1.5.0",
     "formik": "^1.5.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -29,6 +39,7 @@
     "babel-loader": "^8.0.5"
   },
   "scripts": {
+    "prepare": "tsc && cpx src/**/*.css dist && echo 'Finished building NPM package'",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

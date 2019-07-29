@@ -8,12 +8,14 @@ import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
 import {Omit} from "antd/es/_util/type";
 
+type TableViewChild = TableAction | React.ReactNode
+
 export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<T>, 'dataSource'> {
     disableContextMenu?: boolean  // disables context action menu
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
-    children?: (TableAction | React.ReactNode)[]
+    children?: TableViewChild[]
 }
 
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
@@ -131,24 +133,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
-
-    // TODO Find a more reliable way to check the type
-    function isTableAction( c: any ): boolean {
-        // important c has to be of type `any` for compiler to be happy
-        return c.type.name.endsWith("TableAction")
-    }
-
-
     function buildMenu() {
-
         return (
             <Menu>
-                {
-                    React.Children.map(props.children,c => {
-                        // TODO Show dividers, but only one if there multiple in the row
-                        return isTableAction(c) ? React.cloneElement((c as TableAction), {}) : null;//<Menu.Divider/>;
-                    })
-                }
+                { React.Children.toArray(props.children).reduce(reduceToMenu,[]) }
             </Menu>
         )
     }
@@ -192,5 +180,29 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     )
 
 }
+
+// Checks if child is an action
+// TODO Find a more reliable way to check the type
+function isTableAction( child: any ): boolean {
+    // important c has to be of type `any` for compiler to be happy
+    return child.type.name.endsWith("TableAction")
+}
+
+// Reduces table view children to menu items
+// Makes sure that only one sequential divider shown
+function reduceToMenu( children: TableViewChild[], child: TableViewChild ): TableViewChild[] {
+    switch(true) {
+        case isTableAction(child): {
+            children.push(React.cloneElement((child as TableAction), {}));
+            break;
+        }
+        case children.length == 0 || isTableAction(children[children.length-1]): {
+            children.push(<Menu.Divider/>);
+            break;
+        }
+    }
+    return children
+}
+
 
 export default React.memo(TableView);

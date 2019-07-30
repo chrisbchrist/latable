@@ -182,10 +182,9 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 }
 
 // Checks if child is an action
-// TODO Find a more reliable way to check the type
-function isTableAction( child: any ): boolean {
-    // important c has to be of type `any` for compiler to be happy
-    return child.type.name.endsWith("TableAction")
+function isTableAction( child: TableViewChild ): boolean {
+    // TODO Find a more reliable way to check the type
+    return (child as any).type.name.endsWith("TableAction")
 }
 
 // Reduces table view children to menu items

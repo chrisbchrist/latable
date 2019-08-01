@@ -14,6 +14,9 @@ import '../src/indigo.css';
 import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
 import {Person} from "./PersonFormik";
+import DefaultClient, {gql} from "apollo-boost";
+import {ApolloProvider, Query} from "react-apollo";
+import {DomainEntity, Key} from "../src/domain/Domain";
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -33,6 +36,31 @@ const columns = [{
     dataIndex: 'profession',
     key: 'profession',
 }];
+
+const gqlColumns = [{
+    title: 'Code',
+    dataIndex: 'key',
+    key: 'key',
+}, {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+}, {
+    title: 'Currency',
+    dataIndex: 'currency',
+    key: 'currency',
+}, {
+    title: 'phone',
+    dataIndex: 'phone',
+    key: 'phone',
+}];
+
+interface Country extends DomainEntity {
+    key: Key,
+    name: string,
+    currency: string,
+    phone: string
+}
 
 function age( bd: Date ): number {
     let diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
@@ -63,6 +91,10 @@ const data: Person[] = [
     },
 
 ];
+
+const client = new DefaultClient({
+    uri: 'https://countries.trevorblades.com/'
+});
 
 // storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
@@ -188,6 +220,54 @@ storiesOf('TableView', module)
                 <UpdateTableAction onUpdate={updateItem} />
                 <RemoveTableAction onRemove={confirmRemoval} />
             </TableView>
+        )
+
+    })
+
+    .add('using Apollo Client', () => {
+
+        const query =  gql`{
+          countries {
+            key: code
+            name
+            currency
+            phone
+          }
+        }`;
+
+        return (
+            <ApolloProvider client={client}>
+                <Query query={query} >
+                    {({ loading, error, data }) => {
+
+                        if (error) return `Error! ${error.message}`;
+
+                        // console.log(data.countries)
+
+                        // let countries: Country[] =  data.countries;
+                        //     .map( (c: any) => {
+                        //     return { key:c.code, ...c } as Country;
+                        // });
+
+                        return (
+                            <TableView columns={gqlColumns}
+                                       pagination={false}
+                                       bordered
+                                       loading={loading}
+                                       loadData={ () => data.countries as Country[] }
+                                       verboseToolbar={boolean(verboseToolbarTitle, false)}
+                                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
+                                <RefreshTableAction/>
+                                <Divider type="vertical" dashed={true}/>
+                                {/*<InsertTableAction onInsert={insertItem}/>*/}
+                                {/*<UpdateTableAction onUpdate={updateItem}/>*/}
+                                {/*<RemoveTableAction onRemove={confirmRemoval}/>*/}
+                            </TableView>
+                        )
+                    }}
+                </Query>
+            </ApolloProvider>
         )
 
     })

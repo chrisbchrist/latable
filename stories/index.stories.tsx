@@ -116,6 +116,14 @@ function confirmRemoval( person: Person ): Promise<boolean> {
     });
 }
 
+function confirmCountryRemoval( person: Country ): Promise<boolean> {
+    return Modals.confirm({
+        title: 'Delete selected Item?',
+        content: 'Some descriptions here',
+        okType: 'primary'
+    });
+}
+
 
 async function insertItem( person?: Person ): Promise<Person> {
 
@@ -242,13 +250,6 @@ storiesOf('TableView', module)
 
                         if (error) return `Error! ${error.message}`;
 
-                        // console.log(data.countries)
-
-                        // let countries: Country[] =  data.countries;
-                        //     .map( (c: any) => {
-                        //     return { key:c.code, ...c } as Country;
-                        // });
-
                         return (
                             <TableView columns={gqlColumns}
                                        pagination={false}
@@ -262,7 +263,7 @@ storiesOf('TableView', module)
                                 <Divider type="vertical" dashed={true}/>
                                 {/*<InsertTableAction onInsert={insertItem}/>*/}
                                 {/*<UpdateTableAction onUpdate={updateItem}/>*/}
-                                {/*<RemoveTableAction onRemove={confirmRemoval}/>*/}
+                                <RemoveTableAction onRemove={confirmCountryRemoval}/>
                             </TableView>
                         )
                     }}

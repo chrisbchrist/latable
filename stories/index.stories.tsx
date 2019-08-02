@@ -14,9 +14,9 @@ import '../src/indigo.css';
 import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
 import {Person} from "./PersonFormik";
-import DefaultClient, {gql} from "apollo-boost";
+import {gql} from "apollo-boost";
 import {ApolloProvider, Query} from "react-apollo";
-import {DomainEntity, Key} from "../src/domain/Domain";
+import {Country, CountrySupport} from "./Countries"
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -36,31 +36,6 @@ const columns = [{
     dataIndex: 'profession',
     key: 'profession',
 }];
-
-const gqlColumns = [{
-    title: 'Code',
-    dataIndex: 'key',
-    key: 'key',
-}, {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-}, {
-    title: 'Currency',
-    dataIndex: 'currency',
-    key: 'currency',
-}, {
-    title: 'phone',
-    dataIndex: 'phone',
-    key: 'phone',
-}];
-
-interface Country extends DomainEntity {
-    key: Key,
-    name: string,
-    currency: string,
-    phone: string
-}
 
 function age( bd: Date ): number {
     let diff =(new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
@@ -92,9 +67,7 @@ const data: Person[] = [
 
 ];
 
-const client = new DefaultClient({
-    uri: 'https://countries.trevorblades.com/'
-});
+
 
 // storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
 
@@ -109,14 +82,6 @@ const client = new DefaultClient({
 //   ));
 
 function confirmRemoval( person: Person ): Promise<boolean> {
-    return Modals.confirm({
-        title: 'Delete selected Item?',
-        content: 'Some descriptions here',
-        okType: 'primary'
-    });
-}
-
-function confirmCountryRemoval( person: Country ): Promise<boolean> {
     return Modals.confirm({
         title: 'Delete selected Item?',
         content: 'Some descriptions here',
@@ -244,14 +209,14 @@ storiesOf('TableView', module)
         }`;
 
         return (
-            <ApolloProvider client={client}>
+            <ApolloProvider client={CountrySupport.client}>
                 <Query query={query} >
-                    {({ loading, error, data }) => {
-
+                    { ({ loading, error, data }) => {
+                        //TODO: Make better error representation
                         if (error) return `Error! ${error.message}`;
 
                         return (
-                            <TableView columns={gqlColumns}
+                            <TableView columns={CountrySupport.columns}
                                        pagination={false}
                                        bordered
                                        loading={loading}
@@ -261,9 +226,9 @@ storiesOf('TableView', module)
                                        disableContextMenu={boolean(disableContextMenuTitle, false)}>
                                 <RefreshTableAction/>
                                 <Divider type="vertical" dashed={true}/>
-                                {/*<InsertTableAction onInsert={insertItem}/>*/}
-                                {/*<UpdateTableAction onUpdate={updateItem}/>*/}
-                                <RemoveTableAction onRemove={confirmCountryRemoval}/>
+                                <InsertTableAction onInsert={CountrySupport.insertItem}/>
+                                <UpdateTableAction onUpdate={CountrySupport.updateItem}/>
+                                <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
                             </TableView>
                         )
                     }}

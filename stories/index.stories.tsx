@@ -219,6 +219,7 @@ storiesOf('TableView', module)
                             <TableView columns={CountrySupport.columns}
                                        pagination={false}
                                        bordered
+                                       scroll={{ y: 300 }}
                                        loading={loading}
                                        loadData={ () => data.countries as Country[] }
                                        verboseToolbar={boolean(verboseToolbarTitle, false)}

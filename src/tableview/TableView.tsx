@@ -7,6 +7,8 @@ import Menu from "antd/es/menu";
 import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
 import {Omit} from "antd/es/_util/type";
+import {timeOp} from "../Tools";
+import uuid from "uuid";
 
 type TableViewChild = TableAction | React.ReactNode
 
@@ -109,15 +111,19 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex >= 0 ) {
 
-            onRemove( tableData[itemIndex] ).then( shouldRemove => {
-                if ( shouldRemove) {
-                    let data = [...tableData];
-                    data.splice(itemIndex, 1);
-                    setTableData(data);
+            onRemove(tableData[itemIndex]).then(shouldRemove => {
+                if (shouldRemove) {
+                    timeOp("Table item removal", () => {
+                        // let ndata = [...tableData];
+                        // ndata.splice(itemIndex, 1);
+                        // setTableData(ndata);
+                        tableData.splice(itemIndex, 1);
+                        setTableData(tableData);
+                    });
 
                     // calculate appropriate selection index
-                    itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
-                    let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
+                    itemIndex = itemIndex >= tableData.length ? itemIndex - 1 : itemIndex;
+                    let selection = itemIndex < 0 || tableData.length == 0 ? [] : [tableData[itemIndex].key];
                     selectionModel.set(selection);
                 }
             })
@@ -133,17 +139,17 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
-    function buildMenu() {
+    function buildContextMenu() {
         return (
             <Menu>
-                { React.Children.toArray(props.children).reduce(reduceToMenu,[]) }
+                {React.Children.toArray(props.children).reduce(reduceToMenu, [])}
             </Menu>
         )
     }
 
     // Renders values of table with context menu
     function renderCell(value:any) {
-        return <ContextMenuDropdown value={value} buildMenu={buildMenu}/>
+        return <ContextMenuDropdown value={value} buildMenu={buildContextMenu}/>
     }
 
     function decoratedColumns(): ColumnProps<T>[] | undefined {
@@ -192,16 +198,15 @@ function isTableAction( child: TableViewChild ): boolean {
 function reduceToMenu( children: TableViewChild[], child: TableViewChild ): TableViewChild[] {
     switch(true) {
         case isTableAction(child): {
-            children.push(React.cloneElement((child as TableAction), {}));
+            children.push(React.cloneElement((child as TableAction), {key:uuid()}));
             break;
         }
         case children.length == 0 || isTableAction(children[children.length-1]): {
-            children.push(<Menu.Divider/>);
+            children.push(<Menu.Divider key={uuid()} />);
             break;
         }
     }
     return children
 }
-
 
 export default React.memo(TableView);

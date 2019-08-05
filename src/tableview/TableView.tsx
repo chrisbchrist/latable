@@ -37,7 +37,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
 
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [tableData, setTableData]             = useState<T[]>(props.loadData? props.loadData(): []);
     const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
     const [isLoading, setLoading]               = useState(props.loading);
@@ -50,7 +50,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,
-        selectedRowKeys as Keys, setSelectedRowKeys );
+        selectedRowKeys as Key[], setSelectedRowKeys);
 
     function selectRow(row?: T) {
         let selection = row? row.key: undefined;

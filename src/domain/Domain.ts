@@ -1,5 +1,5 @@
-export type Key = number | string
-export type Keys = number[] | string[];
+export type Key = number;
+export type Keys = number[]
 
 export interface DomainEntity {
     key: Key

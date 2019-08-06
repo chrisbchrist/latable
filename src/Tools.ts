@@ -1,5 +1,5 @@
 
-export function timeOp<T>(opTitle: string, op: () => T ): T {
+export function measureTime<T>(opTitle: string, op: () => T ): T {
     console.time(opTitle);
     try {
         return op()

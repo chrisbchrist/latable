@@ -76,7 +76,7 @@ const data: Person[] = [
 //     </Button>
 //   ));
 
-function confirmRemoval( person: Person ): Promise<boolean> {
+function confirmRemoval( person: Person ): Promise<void> {
     return Modals.confirm({
         title: 'Delete selected Item?',
         content: 'Some descriptions here',
@@ -87,7 +87,7 @@ function confirmRemoval( person: Person ): Promise<boolean> {
 
 async function insertItem( person?: Person ): Promise<Person> {
 
-    return new Promise<Person>( (resolve) => {
+    return new Promise<Person>( (resolve, reject) => {
 
         let newPerson = person ? {...person, key: uuid4(), firstName: person!.firstName + " +"} :
             {key: uuid4(), firstName: "Unknown", lastName: "Unknown", age: 0, profession: 'Unknown'};
@@ -96,7 +96,7 @@ async function insertItem( person?: Person ): Promise<Person> {
             title: 'Insert Person',
             okText: 'Create',
             onOk: () =>  resolve(newPerson),
-            onCancel: () => resolve(undefined),
+            onCancel: () => reject(),
         })
 
     });
@@ -104,7 +104,7 @@ async function insertItem( person?: Person ): Promise<Person> {
 
 function updateItem( person: Person ): Promise<Person> {
 
-    return new Promise<Person>( (resolve) => {
+    return new Promise<Person>( (resolve,reject) => {
 
         let updatedPerson = {...person, age: person.age + 10, firstName: person.firstName + " ^"};
 
@@ -112,7 +112,7 @@ function updateItem( person: Person ): Promise<Person> {
             title   : 'Update Person',
             okText  : 'Update',
             onOk    : () => resolve(updatedPerson),
-            onCancel: () => resolve(undefined),
+            onCancel: () => reject(),
         } )
 
     });

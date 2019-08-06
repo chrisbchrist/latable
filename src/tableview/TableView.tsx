@@ -20,9 +20,10 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     children?: TableViewChild[]
 }
 
-export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
-export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T | undefined>;
-export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
+// In following API fulfilled promise defines success, rejected promise defines failure
+export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T>;
+export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T>;
+export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<void>;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -120,25 +121,25 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex < 0 ) return;
 
-        onRemove(tableData[itemIndex]).then( shouldRemove => {
-            if (shouldRemove) {
-                measureTime("Table item removal", () => {
+        onRemove(tableData[itemIndex]).then(() => {
 
-                    // let ndata = [...tableData];
-                    // ndata.splice(itemIndex, 1);
-                    // setTableData(ndata);
+            measureTime("Table item removal", () => {
 
-                    // Following goes again "no direct state update" rule, but it works fine with hooks and...
-                    // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
-                    tableData.splice(itemIndex, 1);
+                // let ndata = [...tableData];
+                // ndata.splice(itemIndex, 1);
+                // setTableData(ndata);
 
-                });
+                // Following goes again "no direct state update" rule, but it works fine with hooks and...
+                // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
+                tableData.splice(itemIndex, 1);
 
-                // Calculate appropriate selection index
-                itemIndex = itemIndex >= tableData.length ? itemIndex - 1 : itemIndex;
-                let selection = itemIndex < 0 || tableData.length == 0 ? [] : [tableData[itemIndex].key];
-                selectionModel.set(selection);
-            }
+            });
+
+            // Calculate appropriate selection index
+            itemIndex = itemIndex >= tableData.length ? itemIndex - 1 : itemIndex;
+            let selection = itemIndex < 0 || tableData.length == 0 ? [] : [tableData[itemIndex].key];
+            selectionModel.set(selection);
+
         })
 
     }

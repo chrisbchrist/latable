@@ -14,9 +14,8 @@ import '../src/indigo.css';
 import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
 import {Person} from "./PersonFormik";
-import {gql} from "apollo-boost";
-import {ApolloProvider, Query} from "react-apollo";
 import {Country, CountrySupport} from "./Countries"
+import {useQuery} from "@apollo/react-hooks";
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -130,13 +129,35 @@ const verboseToolbarTitle = 'Verbose Toolbar';
 const multipleSelectionTitle = 'Multiple Selection';
 const disableContextMenuTitle = 'Disable Context Menu';
 
+function ApolloTableView() {
+
+    const { loading, /*error,*/ data } = useQuery( CountrySupport.query, {client: CountrySupport.client});
+
+    return (
+        <TableView columns={CountrySupport.columns}
+                   pagination={false}
+                   bordered
+                   scroll={{y: 300}}
+                   loading={loading}
+                   loadData={() => data.countries as Country[]}
+                   verboseToolbar={boolean(verboseToolbarTitle, false)}
+                   multipleSelection={boolean(multipleSelectionTitle, false)}
+                   disableContextMenu={boolean(disableContextMenuTitle, false)}>
+            <RefreshTableAction/>
+            <Divider type="vertical" dashed={true}/>
+            <InsertTableAction onInsert={CountrySupport.insertItem}/>
+            <UpdateTableAction onUpdate={CountrySupport.updateItem}/>
+            <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
+        </TableView>
+    )
+}
+
 storiesOf('TableView', module)
 
     .addDecorator(withKnobs)
     .addDecorator(story => <div style={{ padding: '1rem' }}>{story()}</div>)
 
     .add('with standard toolbar', () => {
-
 
         return (
             <TableView columns={columns}
@@ -198,46 +219,8 @@ storiesOf('TableView', module)
     })
 
     .add('using Apollo Client', () => {
-
-        const query =  gql`{
-          countries {
-            key: code
-            name
-            currency
-            phone
-          }
-        }`;
-
-        return (
-            <ApolloProvider client={CountrySupport.client}>
-                <Query query={query} >
-                    { ({ loading, error, data }) => {
-                        //TODO: Make better error representation
-                        if (error) return `Error! ${error.message}`;
-
-                        return (
-                            <TableView columns={CountrySupport.columns}
-                                       pagination={false}
-                                       bordered
-                                       scroll={{ y: 300 }}
-                                       loading={loading}
-                                       loadData={ () => data.countries as Country[] }
-                                       verboseToolbar={boolean(verboseToolbarTitle, false)}
-                                       multipleSelection={boolean(multipleSelectionTitle, false)}
-                                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
-                                <RefreshTableAction/>
-                                <Divider type="vertical" dashed={true}/>
-                                <InsertTableAction onInsert={CountrySupport.insertItem}/>
-                                <UpdateTableAction onUpdate={CountrySupport.updateItem}/>
-                                <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
-                            </TableView>
-                        )
-                    }}
-                </Query>
-            </ApolloProvider>
-        )
-
-    })
-
+        return <ApolloTableView/>
+    });
 
 ;
+

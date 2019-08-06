@@ -2,7 +2,7 @@ import Modals from "../src/modal/ModalContaner";
 import {DomainEntity, Key} from "../src/domain/Domain";
 import PersonForm from "./PersonForm";
 import React from "react";
-import DefaultClient from "apollo-boost";
+import DefaultClient, {gql} from "apollo-boost";
 
 export interface Country extends DomainEntity {
     key: Key,
@@ -34,6 +34,15 @@ export class CountrySupport {
     static client = new DefaultClient({
         uri: 'https://countries.trevorblades.com/'
     });
+
+    static query = gql`{
+          countries {
+            key: code
+            name
+            currency
+            phone
+          }
+        }`;
 
     static async insertItem( country?: Country ): Promise<Country> {
 
@@ -75,16 +84,13 @@ export class CountrySupport {
 
     }
 
-    static confirmRemoval( person: Country ): Promise<boolean> {
+    static confirmRemoval( country: Country ): Promise<void> {
         return Modals.confirm({
             title: 'Delete selected Item?',
             content: 'Some descriptions here',
             okType: 'primary'
-        }).then( (result: boolean ) => {
-            if (result) {
+        }).then( () => {
                 //TODO remove from data store
-            }
-            return result
         });
     }
 

@@ -7,6 +7,8 @@ import Menu from "antd/es/menu";
 import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
 import {Omit} from "antd/es/_util/type";
+import {measureTime} from "../Tools";
+import uuid from "uuid";
 
 type TableViewChild = TableAction | React.ReactNode
 
@@ -18,9 +20,10 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     children?: TableViewChild[]
 }
 
-export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T | undefined>;
-export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T | undefined>;
-export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
+// In following API fulfilled promise defines success, rejected promise defines failure
+export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T>;
+export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T>;
+export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<void>;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -46,7 +49,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     // Since verboseToolbar state is never called in the TableView component
     // we have to force it on change of related prop
     useEffect(() => {setVerboseToolbar(props.verboseToolbar)},[props.verboseToolbar]);
-
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,
@@ -74,11 +76,17 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
+    //
     function insertSelectedItem( onInsert: InsertCallback<T> ) {
         const selectedItem = selectionModel.isEmpty()? undefined: getItemByKey(selectedRowKeys[0] as Key);
         onInsert(selectedItem).then( insertedItem => {
             if (insertedItem) {
-                setTableData([...tableData, insertedItem]);
+
+                // setTableData([...tableData, insertedItem]);
+
+                // Seems to work fine with hooks
+                tableData.push(insertedItem);
+
                 // select newly inserted item
                 selectionModel.set([insertedItem.key])
             }
@@ -91,9 +99,13 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         if ( selectedIndex >= 0 ) {
             onUpdate(tableData[selectedIndex]).then( updatedItem => {
                 if (updatedItem) {
-                    let data = [...tableData];
-                    data[selectedIndex] = updatedItem;
-                    setTableData(data);
+
+                    // let data = [...tableData];
+                    // data[selectedIndex] = updatedItem;
+                    // setTableData(data);
+
+                    // Seems to work fine with the hooks
+                    tableData[selectedIndex] = updatedItem;
 
                     // make sure selection stays on the same item
                     selectionModel.set([updatedItem.key])
@@ -107,21 +119,29 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         if ( selectionModel.isEmpty() ) return;
 
         let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
-        if ( itemIndex >= 0 ) {
+        if ( itemIndex < 0 ) return;
 
-            onRemove( tableData[itemIndex] ).then( shouldRemove => {
-                if ( shouldRemove) {
-                    let data = [...tableData];
-                    data.splice(itemIndex, 1);
-                    setTableData(data);
+        onRemove(tableData[itemIndex]).then(() => {
 
-                    // calculate appropriate selection index
-                    itemIndex = itemIndex >= data.length ? itemIndex - 1 : itemIndex;
-                    let selection = itemIndex < 0 || data.length == 0 ? [] : [data[itemIndex].key];
-                    selectionModel.set(selection);
-                }
-            })
-        }
+            measureTime("Table item removal", () => {
+
+                // let ndata = [...tableData];
+                // ndata.splice(itemIndex, 1);
+                // setTableData(ndata);
+
+                // Following goes again "no direct state update" rule, but it works fine with hooks and...
+                // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
+                tableData.splice(itemIndex, 1);
+
+            });
+
+            // Calculate appropriate selection index
+            itemIndex = itemIndex >= tableData.length ? itemIndex - 1 : itemIndex;
+            let selection = itemIndex < 0 || tableData.length == 0 ? [] : [tableData[itemIndex].key];
+            selectionModel.set(selection);
+
+        })
+
     }
 
     const context = {
@@ -133,17 +153,17 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         removeSelectedItem: removeSelectedItem,
     };
 
-    function buildMenu() {
+    function buildContextMenu() {
         return (
             <Menu>
-                { React.Children.toArray(props.children).reduce(reduceToMenu,[]) }
+                {React.Children.toArray(props.children).reduce(reduceToMenu, [])}
             </Menu>
         )
     }
 
     // Renders values of table with context menu
     function renderCell(value:any) {
-        return <ContextMenuDropdown value={value} buildMenu={buildMenu}/>
+        return <ContextMenuDropdown value={value} buildMenu={buildContextMenu}/>
     }
 
     function decoratedColumns(): ColumnProps<T>[] | undefined {
@@ -192,16 +212,15 @@ function isTableAction( child: TableViewChild ): boolean {
 function reduceToMenu( children: TableViewChild[], child: TableViewChild ): TableViewChild[] {
     switch(true) {
         case isTableAction(child): {
-            children.push(React.cloneElement((child as TableAction), {}));
+            children.push(React.cloneElement((child as TableAction), {key:uuid()}));
             break;
         }
         case children.length == 0 || isTableAction(children[children.length-1]): {
-            children.push(<Menu.Divider/>);
+            children.push(<Menu.Divider key={uuid()} />);
             break;
         }
     }
     return children
 }
-
 
 export default React.memo(TableView);

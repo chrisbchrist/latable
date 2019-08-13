@@ -17,7 +17,7 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
-    children?: TableViewChild[]
+    children?: TableViewChild | TableViewChild[]
 }
 
 // In following API fulfilled promise defines success, rejected promise defines failure
@@ -39,7 +39,7 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
-    const getTableData = () => props.loadData? props.loadData(): []
+    const getTableData = () => props.loadData? props.loadData(): [];
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [tableData, setTableData]             = useState<T[]>(getTableData());

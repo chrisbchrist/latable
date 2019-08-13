@@ -1,6 +1,6 @@
 {
   "name": "@nextera/indigo",
-  "version": "0.3.9",
+  "version": "0.3.11",
   "private": false,
   "license": "UNLICENSED",
   "main": "dist/index.js",
@@ -30,6 +30,7 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@apollo/react-hooks": "^3.0.0",
     "@storybook/addon-actions": "^5.1.9",
     "@storybook/addon-knobs": "^5.1.9",
     "@storybook/addon-links": "^5.1.9",
@@ -40,8 +41,7 @@
     "@types/storybook__addon-knobs": "^5.0.2",
     "@types/storybook__react": "^4.0.1",
     "apollo-boost": "^0.4.3",
-    "graphql": "^14.4.2",
-    "@apollo/react-hooks": "^3.0.0"
+    "graphql": "^14.4.2"
   },
   "scripts": {
     "prepare": "tsc && cpx src/**/*.css dist && echo 'Finished building NPM package'",

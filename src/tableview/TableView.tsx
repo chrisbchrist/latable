@@ -39,16 +39,19 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
+    const getTableData = () => props.loadData? props.loadData(): []
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
-    const [tableData, setTableData]             = useState<T[]>(props.loadData? props.loadData(): []);
+    const [tableData, setTableData]             = useState<T[]>(getTableData());
     const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
     const [isLoading, setLoading]               = useState(props.loading);
 
-    // Make sure toolbar verbosity can be changed dynamically
-    // Since verboseToolbar state is never called in the TableView component
+    // Make sure certain properties can be changed dynamically can be changed dynamically
+    // Since verboseToolbar & loading state is never called in the TableView component
     // we have to force it on change of related prop
     useEffect(() => {setVerboseToolbar(props.verboseToolbar)},[props.verboseToolbar]);
+    useEffect(() => {setLoading(props.loading)},[props.loading]);
+    useEffect(() => {setTableData(getTableData())},[props.loadData]);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,

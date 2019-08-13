@@ -218,6 +218,22 @@ storiesOf('TableView', module)
 
     })
 
+    .add('with only one action', () => {
+
+        return (
+            <TableView columns={columns}
+                       pagination={false}
+                       bordered
+                       loadData={retrieveData}
+                       verboseToolbar={boolean(verboseToolbarTitle, false)}
+                       multipleSelection={boolean(multipleSelectionTitle, false)}
+                       disableContextMenu={boolean(disableContextMenuTitle, false)}>
+                <RefreshTableAction />
+            </TableView>
+        )
+
+    })
+
     .add('using Apollo Client', () => {
         return <ApolloTableView/>
     });

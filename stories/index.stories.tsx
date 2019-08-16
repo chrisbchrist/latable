@@ -16,6 +16,7 @@ import Modals from "../src/modal/ModalContaner";
 import {Person} from "./PersonFormik";
 import {Country, CountrySupport} from "./Countries"
 import {useQuery} from "@apollo/react-hooks";
+import {ApolloTableView} from "../src/tableview/ApolloTableView";
 
 //TODO derive columns from domain entity
 const columns = [{
@@ -129,7 +130,7 @@ const verboseToolbarTitle = 'Verbose Toolbar';
 const multipleSelectionTitle = 'Multiple Selection';
 const disableContextMenuTitle = 'Disable Context Menu';
 
-function ApolloTableView() {
+function UseTableViewWithGraphQL() {
 
     const { loading, /*error,*/ data } = useQuery( CountrySupport.query, {client: CountrySupport.client});
 
@@ -149,6 +150,42 @@ function ApolloTableView() {
             <UpdateTableAction onUpdate={CountrySupport.updateItem}/>
             <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
         </TableView>
+    )
+}
+
+function UseApolloTableView() {
+
+    const { loading, /*error,*/ data } = useQuery( CountrySupport.query, {client: CountrySupport.client});
+
+    return (
+        <ApolloTableView
+                client={ CountrySupport.client}
+                entityName="Country"
+                queryName="countries"
+                columnDefs={{
+                    keyColumn: "code",
+                    columns: [{
+                        title: 'Code',
+                        dataIndex: 'key',
+                        key: 'key',
+                    }],
+                    excludeColumns:["languages","continent"]
+                }}
+                query="{ countries { key:code }}"
+                pagination={false}
+                bordered
+                scroll={{y: 300}}
+                loading={loading}
+                // loadData={() => data.countries as Country[]}
+                verboseToolbar={boolean(verboseToolbarTitle, false)}
+                multipleSelection={boolean(multipleSelectionTitle, false)}
+                disableContextMenu={boolean(disableContextMenuTitle, false)}>
+            <RefreshTableAction/>
+            <Divider type="vertical" dashed={true}/>
+            <InsertTableAction onInsert={CountrySupport.insertItem}/>
+            <UpdateTableAction onUpdate={CountrySupport.updateItem}/>
+            <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
+        </ApolloTableView>
     )
 }
 
@@ -235,7 +272,11 @@ storiesOf('TableView', module)
     })
 
     .add('using Apollo Client', () => {
-        return <ApolloTableView/>
+        return <UseTableViewWithGraphQL/>
+    })
+
+    .add('using ApolloTableView', () => {
+        return <UseApolloTableView/>
     });
 
 ;

@@ -155,8 +155,6 @@ function UseTableViewWithGraphQL() {
 
 function UseApolloTableView() {
 
-    const { loading, /*error,*/ data } = useQuery( CountrySupport.query, {client: CountrySupport.client});
-
     return (
         <ApolloTableView
                 client={ CountrySupport.client}
@@ -164,19 +162,17 @@ function UseApolloTableView() {
                 queryName="countries"
                 columnDefs={{
                     keyColumn: "code",
-                    columns: [{
-                        title: 'Code',
-                        dataIndex: 'key',
-                        key: 'key',
-                    }],
+                    // columns: [{
+                    //     title: 'Code',
+                    //     dataIndex: 'key',
+                    //     key: 'key',
+                    // }],
                     excludeColumns:["languages","continent"]
                 }}
-                query="{ countries { key:code }}"
+                // query="{ countries { key:code }}"
                 pagination={false}
                 bordered
                 scroll={{y: 300}}
-                loading={loading}
-                // loadData={() => data.countries as Country[]}
                 verboseToolbar={boolean(verboseToolbarTitle, false)}
                 multipleSelection={boolean(multipleSelectionTitle, false)}
                 disableContextMenu={boolean(disableContextMenuTitle, false)}>

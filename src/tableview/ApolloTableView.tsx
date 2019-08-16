@@ -14,7 +14,7 @@ interface ApolloColumnDefinition<T extends DomainEntity> {
 }
 
 
-export interface ApolloTableViewProps<T extends DomainEntity> extends Omit<TableViewProps<T>, 'columns' | 'loadData'> {
+export interface ApolloTableViewProps<T extends DomainEntity> extends Omit<TableViewProps<T>, 'columns' | 'loadData' | 'loading'> {
     client: ApolloClient<any>;
     entityName: string
     columnDefs: ApolloColumnDefinition<T>
@@ -44,7 +44,6 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
     const [introspectionQry, setIntrospectionQry] = useState(buildIntrospectionQuery(entityName));
 
     const columnData = useQuery(gql(introspectionQry), {client: client})
-
 
     function getColumns(): ColumnProps<T>[] | undefined {
 
@@ -124,7 +123,6 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
     },[columns]);
 
     useEffect( () => {
-        // setColumns(columnDefs.columns || getColumns());
         setIntrospectionQry(buildIntrospectionQuery(entityName));
     },[entityName]);
 

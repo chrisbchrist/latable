@@ -43,7 +43,7 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
 
     const [introspectionQry, setIntrospectionQry] = useState(buildIntrospectionQuery(entityName));
 
-    const columnData = useQuery(gql(introspectionQry), {client: client})
+    const columnQuery = useQuery(gql(introspectionQry), {client: client})
 
     function getColumns(): ColumnProps<T>[] | undefined {
 
@@ -60,7 +60,7 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
                       "__typename": "__Field"
                     },
          */
-        const myFields = columnData.data.__type;
+        const myFields = columnQuery.data.data && columnQuery.data.data.__type;
 
         // when a component is first run, the query may not have completed yet
         // resulting in myFields being 'nothing' if we don't account for this
@@ -116,7 +116,7 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
 
     useEffect( () => {
         setColumns(columnDefs.columns || getColumns());
-    } );
+    }, []);
 
     useEffect( () => {
         setQuery(props.query || defaultQuery());
@@ -129,7 +129,7 @@ export function ApolloTableView<T extends DomainEntity>( props: ApolloTableViewP
     return (
         <TableView
             columns={columns}
-            loading={loading}
+            loading={columnQuery.loading || loading}
             loadData={ () => !loading && columns && data? data[queryName] as T[]: [] }
             {...otherProps}>
         </TableView>

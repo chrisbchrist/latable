@@ -153,23 +153,15 @@ function UseTableViewWithGraphQL() {
     )
 }
 
-function UseApolloTableView() {
+function UseApolloTableView(props: any) {
 
     return (
         <ApolloTableView
                 client={ CountrySupport.client}
                 entityName="Country"
                 queryName="countries"
-                columnDefs={{
-                    keyColumn: "code",
-                    // columns: [{
-                    //     title: 'Code',
-                    //     dataIndex: 'key',
-                    //     key: 'key',
-                    // }],
-                    excludeColumns:["languages","continent"]
-                }}
-                // query="{ countries { key:code }}"
+                columnDefs={props.columnDefs}
+                query={ props.query}
                 pagination={false}
                 bordered
                 scroll={{y: 300}}
@@ -272,8 +264,34 @@ storiesOf('TableView', module)
     })
 
     .add('using ApolloTableView', () => {
-        return <UseApolloTableView/>
-    });
+        return <UseApolloTableView
+            columnDefs={{ keyColumn: "code"}}
+        />
+    })
+
+    .add('using ApolloTableView with custom key', () => {
+        return <UseApolloTableView
+            columnDefs={{
+                keyColumn: "code",
+                // columns: [{
+                //     title: 'Code',
+                //     dataIndex: 'key',
+                //     key: 'key',
+                // }],
+            }}
+            query="{ countries { key:code }}"
+        />
+    })
+
+    .add('using ApolloTableView with exclude columns', () => {
+        return <UseApolloTableView
+            columnDefs={{
+                excludeColumns:["languages","continent"]
+            }}
+            query="{ countries { key:code }}"
+        />
+    })
+    ;
 
 ;
 

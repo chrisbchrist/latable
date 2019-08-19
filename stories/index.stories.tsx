@@ -164,7 +164,7 @@ function UseApolloTableView(props: any) {
                 query={ props.query}
                 pagination={false}
                 bordered
-                scroll={{y: 300}}
+                // scroll={{y: 500, x: 1100}}
                 verboseToolbar={boolean(verboseToolbarTitle, false)}
                 multipleSelection={boolean(multipleSelectionTitle, false)}
                 disableContextMenu={boolean(disableContextMenuTitle, false)}>
@@ -266,6 +266,7 @@ storiesOf('TableView', module)
     .add('using ApolloTableView', () => {
         return <UseApolloTableView
             columnDefs={{ keyColumn: "code"}}
+            query="{ countries { key:code }}"
         />
     })
 
@@ -280,15 +281,17 @@ storiesOf('TableView', module)
                 // }],
             }}
             query="{ countries { key:code }}"
+            queryName="countries"
         />
     })
 
     .add('using ApolloTableView with exclude columns', () => {
         return <UseApolloTableView
             columnDefs={{
+                keyColumn: "code",
                 excludeColumns:["languages","continent"]
             }}
-            query="{ countries { key:code }}"
+            queryName="countries"
         />
     })
     ;

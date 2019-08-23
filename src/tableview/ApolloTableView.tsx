@@ -11,6 +11,7 @@ interface ApolloColumnDefinition<T extends DomainEntity> {
   keyColumn: string; // unique row identifier always aliased as 'key'
   columns?: ColumnProps<T>[]; // all columns if undefined
   excludeColumns?: string[];
+  defaultSorters?: boolean; // If this flag is true, column generator will add default sorters to columns to sort alphabetically or by numeric value
   recursive?: boolean; //Flag to indicate whether columns should be generated recursively for subtypes
 }
 
@@ -32,7 +33,7 @@ function buildIntrospectionQuery(entityName: string) {
                   title:description
                     type {
                         fields {
-                            dataIndex: name
+                            dataIndex:name
                             title: description
                         }
                     }
@@ -45,7 +46,7 @@ export function ApolloTableView<T extends DomainEntity>(
   props: ApolloTableViewProps<T>
 ) {
   const { client, columnDefs, entityName, ...otherProps } = props;
-  const { recursive } = columnDefs;
+   const { defaultSorters } = columnDefs;
   const queryName = props.queryName || "findAll";
   const excludedColumns = !props.columnDefs.excludeColumns
     ? []
@@ -73,21 +74,21 @@ export function ApolloTableView<T extends DomainEntity>(
         .map((c: any) => {
           let dataIndex =
             c.dataIndex === columnDefs.keyColumn ? "key" : c.dataIndex;
-            if (recursive && c.type.fields) {
-                c.type.fields.forEach((subField: any) => {
-                    c.children.push({
-                        dataIndex: subField.dataIndex,
-                        key: subField.dataIndex,
-                        title: subField.title || subField.dataIndex
-                    })
-                })
-            }
+          let sortData =  defaultSorters ? {
+            sorter: (a: any,b: any) => {
+              if (a[c.dataIndex] < b[c.dataIndex]) return -1;
+              if (a[c.dataIndex] > b[c.dataIndex]) return 1;
+              return 0;
+            },
+            sortDirections: ['ascend', 'descend']
+          } : null;
           return {
             dataIndex: dataIndex,
             key: dataIndex,
             title:
                 c.title ||
-              (dataIndex === "key" ? columnDefs.keyColumn : dataIndex)
+              (dataIndex === "key" ? columnDefs.keyColumn : dataIndex),
+              ...sortData
           };
         });
 
@@ -147,7 +148,7 @@ export function ApolloTableView<T extends DomainEntity>(
 
   useEffect(() => {
     if (query !== defaultQuery()) {
-      console.log("Columns updated");
+      console.log("Columns updated", columns);
       setQuery(props.query || defaultQuery());
     }
   }, [columns]);

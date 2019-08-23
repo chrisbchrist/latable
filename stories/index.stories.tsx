@@ -173,7 +173,7 @@ function UseApolloTableView(props: any) {
       queryName="countries"
       columnDefs={props.columnDefs}
       query={props.query}
-      pagination={{ pageSize: 50 }}
+      pagination={{ pageSize: 25 }}
       bordered
       // scroll={{y: 500, x: 1100}}
       verboseToolbar={boolean(verboseToolbarTitle, false)}

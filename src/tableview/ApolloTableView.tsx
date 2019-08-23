@@ -148,7 +148,7 @@ export function ApolloTableView<T extends DomainEntity>(
 
   useEffect(() => {
     if (query !== defaultQuery()) {
-      console.log("Columns updated", columns);
+      //console.log("Columns updated", columns);
       setQuery(props.query || defaultQuery());
     }
   }, [columns]);

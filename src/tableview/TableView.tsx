@@ -182,12 +182,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 {... otherProps}
                 columns={decoratedColumns()}
                 loading={isLoading}
-                title={() =>
+                title={(currentPageData) => (
                     <div>
-                        {props.title}
-                        {props.children}
+                        <div>{props.title && props.title(currentPageData)}</div>
+                        <div style={{ display: "flex" }}>
+                            {props.children}
+                        </div>
                     </div>
-                }
+                )}
                 dataSource={tableData}
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,

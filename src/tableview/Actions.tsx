@@ -73,12 +73,13 @@ export interface InsertTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
+    const { onInsert, ...rest } = props;
     return (
         <TableActionBase<T>
             text="Insert"
             icon="plus"
-            doPerform={ctx => ctx.insertSelectedItem(props.onInsert)}
-            {...props}
+            doPerform={ctx => ctx.insertSelectedItem(onInsert)}
+            {...rest}
         />
     );
 }
@@ -90,13 +91,14 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
+    const { onUpdate, ...rest } = props;
     return (
         <TableActionBase<T>
             text="Edit"
             icon="edit"
             isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
-            doPerform={ ctx => ctx.updateSelectedItem(props.onUpdate) }
-            {...props}
+            doPerform={ ctx => ctx.updateSelectedItem(onUpdate) }
+            {...rest}
         />
     );
 }
@@ -108,13 +110,14 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
+    const { onRemove, ...rest} = props;
     return (
         <TableActionBase<T>
             text="Delete"
             icon="delete"
-            {...props}
+            {...rest}
             isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 }
-            doPerform = { ctx => ctx.removeSelectedItem(props.onRemove) }
+            doPerform = { ctx => ctx.removeSelectedItem(onRemove) }
         />
     );
 }

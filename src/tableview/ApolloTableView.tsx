@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { DomainEntity } from "../domain/Domain";
 import { TableView, TableViewProps } from "./TableView";
-import { ApolloClient, gql } from "apollo-boost";
+import { ApolloClient, gql, ApolloQueryResult } from "apollo-boost";
 import { useQuery } from "@apollo/react-hooks";
 import { ColumnProps } from "antd/lib/table";
 import { Omit } from "antd/es/_util/type";
@@ -51,14 +51,13 @@ export function ApolloTableView<T extends DomainEntity>(
   const excludedColumns = !props.columnDefs.excludeColumns
     ? []
     : props.columnDefs.excludeColumns;
-  //const [isLoading, setLoading] = useState<boolean>(true);
 
   // Refactored column function as async to ensure column data is fetched before the table is rendered
   const getColumnsAsync: (
     entityName: string
   ) => Promise<ColumnProps<T>[]> | undefined = async (entityName: string) => {
     const introspectionQuery = buildIntrospectionQuery(entityName);
-    const introspectionResult: any = await client.query({
+    const introspectionResult: ApolloQueryResult<any> = await client.query({
       query: introspectionQuery
     });
     console.log(introspectionResult);
@@ -76,8 +75,8 @@ export function ApolloTableView<T extends DomainEntity>(
             c.dataIndex === columnDefs.keyColumn ? "key" : c.dataIndex;
           let sortData =  defaultSorters ? {
             sorter: (a: any,b: any) => {
-              if (a[c.dataIndex] < b[c.dataIndex]) return -1;
-              if (a[c.dataIndex] > b[c.dataIndex]) return 1;
+              if (a[dataIndex] < b[dataIndex]) return -1;
+              if (a[dataIndex] > b[dataIndex]) return 1;
               return 0;
             },
             sortDirections: ['ascend', 'descend']
@@ -95,7 +94,6 @@ export function ApolloTableView<T extends DomainEntity>(
       cols.forEach((c: ColumnProps<T>) => {
         console.log(`${c.dataIndex} -> ${c.title}`);
       });
-      // setColumns(cols)
       return cols;
     } else {
       console.log("data doesn't exist");
@@ -126,9 +124,6 @@ export function ApolloTableView<T extends DomainEntity>(
     columnDefs.columns && columnDefs.columns
   );
   const [query, setQuery] = useState(props.query || defaultQuery());
-  //const hasQueryChanged = useCompare(query);
-
-  //console.log(query);
 
   const { loading, data }: QueryResult<any> = useQuery(gql(query), {
     client,
@@ -139,9 +134,9 @@ export function ApolloTableView<T extends DomainEntity>(
   // Awaiting resolution of column query before setting columns/rendering table
   useEffect(() => {
     const initializeColumns = async () => {
-      const columns = await getColumnsAsync(entityName);
-      setColumns(columns || columnDefs.columns);
-      return columns || columnDefs;
+      const cols = await getColumnsAsync(entityName);
+      setColumns(cols || columnDefs.columns);
+      return cols || columnDefs;
     };
     initializeColumns();
   }, []);

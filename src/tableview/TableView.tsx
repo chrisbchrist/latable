@@ -154,6 +154,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         insertSelectedItem: insertSelectedItem,
         updateSelectedItem: updateSelectedItem,
         removeSelectedItem: removeSelectedItem,
+
     };
 
     function buildContextMenu() {
@@ -161,18 +162,32 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
             <Menu>
                 {React.Children.toArray(props.children).reduce(reduceToMenu, [])}
             </Menu>
-        )
+        );
     }
 
     // Renders values of table with context menu
-    function renderCell(value:any) {
-        return <ContextMenuDropdown value={value} buildMenu={buildContextMenu}/>
+    function renderCell(value: any) {
+        return <ContextMenuDropdown value={value} buildMenu={buildContextMenu} />;
+    }
+
+    function columnMaps(col: any) {
+        return {
+            ...col,
+            render: col.render
+                ? (value: any) => (
+                    <ContextMenuDropdown
+                        value={col.render(value)}
+                        buildMenu={buildContextMenu}
+                    />
+                )
+                : renderCell
+        };
     }
 
     function decoratedColumns(): ColumnProps<T>[] | undefined {
-        if ( props.disableContextMenu ) return props.columns;
+        if (props.disableContextMenu) return props.columns;
         // Replace rendering of the table values to show context menu
-        return props.columns && props.columns.map( c => ({ ...c, render: renderCell}) )
+        return props.columns && props.columns.map(columnMaps);
     }
 
     return (

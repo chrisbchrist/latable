@@ -35,6 +35,7 @@ function ModalContainer( props: ModalContainerProps ) {
     const context = {
         setOkDisabled: setOkDisabled,
         setLoading:setConfirmLoading,
+        closeModal
     };
 
     return (

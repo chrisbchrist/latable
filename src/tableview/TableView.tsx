@@ -170,7 +170,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         return <ContextMenuDropdown value={value} buildMenu={buildContextMenu} />;
     }
 
-    function columnMaps(col: any) {
+    function mapColumns(col: any) {
         return {
             ...col,
             render: col.render
@@ -187,7 +187,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     function decoratedColumns(): ColumnProps<T>[] | undefined {
         if (props.disableContextMenu) return props.columns;
         // Replace rendering of the table values to show context menu
-        return props.columns && props.columns.map(columnMaps);
+        return props.columns && props.columns.map(mapColumns);
     }
 
     return (

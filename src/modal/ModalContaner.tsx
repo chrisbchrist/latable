@@ -86,15 +86,15 @@ export default class Modals {
      * @param props modal's props
      * @returns Promise<boolean> indicating the async nature of confirmation
      */
-    public static async confirm(props: ModalFuncProps): Promise<void> {
+    public static async confirm(props: ModalFuncProps): Promise<boolean> {
         return new Promise((resolve,reject) => {
             Modal.confirm({
                 okText: 'Yes',
                 okType: 'danger',
                 cancelText: 'No',
                 ...props,
-                onOk    : () => resolve(),
-                onCancel: () => reject(),//resolve(false),
+                onOk    : () => resolve(true),
+                onCancel: () => reject(false),//resolve(false),
             })
         });
 

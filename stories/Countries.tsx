@@ -84,13 +84,13 @@ export class CountrySupport {
 
     }
 
-    static confirmRemoval( country: Country ): Promise<void> {
+    static confirmRemoval( country: Country ): Promise<boolean> {
         return Modals.confirm({
             title: 'Delete selected Item?',
             content: 'Some descriptions here',
             okType: 'primary'
-        }).then( () => {
-                //TODO remove from data store
+        }).then( (res) => {
+                return res;
         });
     }
 

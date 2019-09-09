@@ -21,6 +21,7 @@ import { Person } from "./PersonFormik";
 import { Country, CountrySupport } from "./Countries";
 import { useQuery } from "@apollo/react-hooks";
 import { ApolloTableView } from "../src/tableview/ApolloTableView";
+import {Keys} from "../src/domain/Domain";
 
 //TODO derive columns from domain entity
 const columns = [
@@ -87,7 +88,7 @@ const data: Person[] = [
 //     </Button>
 //   ));
 
-function confirmRemoval(person: Person): Promise<void> {
+function confirmRemoval(person: Person): Promise<boolean> {
   return Modals.confirm({
     title: "Delete selected Item?",
     content: "Some descriptions here",
@@ -179,6 +180,7 @@ function UseApolloTableView(props: any) {
       verboseToolbar={boolean(verboseToolbarTitle, false)}
       multipleSelection={boolean(multipleSelectionTitle, false)}
       disableContextMenu={boolean(disableContextMenuTitle, false)}
+      {...props}
     >
       <RefreshTableAction />
       <Divider type="vertical" dashed={true} />
@@ -325,6 +327,8 @@ storiesOf("TableView", module)
             defaultSorters: true
           }}
           queryName="countries"
+          multipleSelection={true}
+          onRowSelect={(keys: Keys) => console.log("Selected Row Keys:", keys)}
       />
   );
 });

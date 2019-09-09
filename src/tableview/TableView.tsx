@@ -17,13 +17,15 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
     loadData?: () => T[];         // function to load data into the table
-    children?: TableViewChild | TableViewChild[]
+    children?: TableViewChild | TableViewChild[],
+    onRowSelect?: (selectedRowKeys: Keys) => any; //Callback function run when selected row keys change to expose
+                                                        // keys for additional functionality until custom table actions can be implemented
 }
 
 // In following API fulfilled promise defines success, rejected promise defines failure
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T>;
 export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T>;
-export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<void>;
+export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -52,6 +54,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     useEffect(() => {setVerboseToolbar(props.verboseToolbar)},[props.verboseToolbar]);
     useEffect(() => {setLoading(props.loading)},[props.loading]);
     useEffect(() => {setTableData(getTableData())},[props.loadData]);
+
+    useEffect(() => {
+        props.onRowSelect && props.onRowSelect(selectedRowKeys);
+    }, [selectedRowKeys]);
 
     const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
         props.multipleSelection != undefined && props.multipleSelection,

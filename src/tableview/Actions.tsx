@@ -57,12 +57,13 @@ function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> )
 export type TableAction = RefreshTableAction | InsertTableAction | UpdateTableAction | RemoveTableAction
 
 export function RefreshTableAction<T extends DomainEntity>(props: TableActionProps) {
+    const { customText, ...rest } = props;
     return (
         <TableActionBase<T>
-            text={ props.customText || "Refresh"}
+            text={ customText || "Refresh"}
             icon="sync"
             doPerform={ctx => ctx.refreshData()}
-            {...props}
+            {...rest}
         />
     );
 }
@@ -74,10 +75,10 @@ export interface InsertTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function InsertTableAction<T extends DomainEntity>(props: InsertTableActionProps<T>) {
-    const { onInsert, ...rest } = props;
+    const { onInsert, customText, ...rest } = props;
     return (
         <TableActionBase<T>
-            text={ props.customText || "Add"}
+            text={ customText || "Add"}
             icon="plus"
             doPerform={ctx => ctx.insertSelectedItem(onInsert)}
             {...rest}
@@ -92,10 +93,10 @@ export interface UpdateTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActionProps<T>) {
-    const { onUpdate, ...rest } = props;
+    const { onUpdate, customText, ...rest } = props;
     return (
         <TableActionBase<T>
-            text={ props.customText || "Edit"}
+            text={ customText || "Edit"}
             icon="edit"
             isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
             doPerform={ ctx => ctx.updateSelectedItem(onUpdate) }
@@ -111,10 +112,10 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends TableAct
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
-    const { onRemove, ...rest} = props;
+    const { onRemove, customText, ...rest} = props;
     return (
         <TableActionBase<T>
-            text={ props.customText || "Delete"}
+            text={ customText || "Delete"}
             icon="delete"
             {...rest}
             isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 }

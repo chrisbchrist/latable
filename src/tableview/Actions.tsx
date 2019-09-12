@@ -76,7 +76,7 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
     const { onInsert, ...rest } = props;
     return (
         <TableActionBase<T>
-            text="Insert"
+            text="Add"
             icon="plus"
             doPerform={ctx => ctx.insertSelectedItem(onInsert)}
             {...rest}

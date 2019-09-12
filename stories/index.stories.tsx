@@ -159,8 +159,8 @@ function UseTableViewWithGraphQL() {
     >
       <RefreshTableAction />
       <Divider type="vertical" dashed={true} />
-      <InsertTableAction onInsert={CountrySupport.insertItem} />
-      <UpdateTableAction onUpdate={CountrySupport.updateItem} />
+      <InsertTableAction customText="Adfsdf" onInsert={CountrySupport.insertItem} />
+      <UpdateTableAction customText="Update" onUpdate={CountrySupport.updateItem} />
       <RemoveTableAction onRemove={CountrySupport.confirmRemoval} />
     </TableView>
   );

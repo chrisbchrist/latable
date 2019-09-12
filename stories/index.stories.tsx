@@ -153,13 +153,13 @@ function UseTableViewWithGraphQL() {
       scroll={{ y: 300 }}
       loading={loading}
       loadData={() => data.countries as Country[]}
-      verboseToolbar={boolean(verboseToolbarTitle, false)}
+      verboseToolbar={true}
       multipleSelection={boolean(multipleSelectionTitle, false)}
       disableContextMenu={boolean(disableContextMenuTitle, false)}
     >
       <RefreshTableAction />
       <Divider type="vertical" dashed={true} />
-      <InsertTableAction customText="Adfsdf" onInsert={CountrySupport.insertItem} />
+      <InsertTableAction customText="Ard;ebarg" onInsert={CountrySupport.insertItem} />
       <UpdateTableAction customText="Update" onUpdate={CountrySupport.updateItem} />
       <RemoveTableAction onRemove={CountrySupport.confirmRemoval} />
     </TableView>

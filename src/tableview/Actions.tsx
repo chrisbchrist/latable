@@ -8,6 +8,7 @@ import {ContextMenuDropdownContext} from "./ContextMenuDropdown";
 // Excludes perform property since it should be defined internally by each table action
 export interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
     isValid?: () => boolean // custom validation rule
+    customText?: string;
 }
 
 interface TableActionConfig<T extends DomainEntity> extends TableActionProps {
@@ -58,7 +59,7 @@ export type TableAction = RefreshTableAction | InsertTableAction | UpdateTableAc
 export function RefreshTableAction<T extends DomainEntity>(props: TableActionProps) {
     return (
         <TableActionBase<T>
-            text="Refresh"
+            text={ props.customText || "Refresh"}
             icon="sync"
             doPerform={ctx => ctx.refreshData()}
             {...props}
@@ -76,7 +77,7 @@ export function InsertTableAction<T extends DomainEntity>(props: InsertTableActi
     const { onInsert, ...rest } = props;
     return (
         <TableActionBase<T>
-            text="Add"
+            text={ props.customText || "Add"}
             icon="plus"
             doPerform={ctx => ctx.insertSelectedItem(onInsert)}
             {...rest}
@@ -94,7 +95,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
     const { onUpdate, ...rest } = props;
     return (
         <TableActionBase<T>
-            text="Edit"
+            text={ props.customText || "Edit"}
             icon="edit"
             isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
             doPerform={ ctx => ctx.updateSelectedItem(onUpdate) }
@@ -113,7 +114,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
     const { onRemove, ...rest} = props;
     return (
         <TableActionBase<T>
-            text="Delete"
+            text={ props.customText || "Delete"}
             icon="delete"
             {...rest}
             isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 }

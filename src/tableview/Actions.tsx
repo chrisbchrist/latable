@@ -113,6 +113,7 @@ export interface RemoveTableActionProps<T extends DomainEntity> extends TableAct
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
     const { onRemove, customText, ...rest} = props;
+    //TODO: Enable remove button for multiple selections after bulk removal is implemented
     return (
         <TableActionBase<T>
             text={ customText || "Delete"}

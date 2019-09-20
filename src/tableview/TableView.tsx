@@ -6,6 +6,7 @@ import {ColumnProps, TableProps} from "antd/es/table";
 import Menu from "antd/es/menu";
 import {ContextMenuDropdown} from "./ContextMenuDropdown";
 import {TableAction} from "./Actions";
+import {TableSearch} from "../search/TableSearch";
 import {Omit} from "antd/es/_util/type";
 import {measureTime} from "../Tools";
 import uuid from "uuid";
@@ -19,7 +20,8 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     loadData?: () => T[];         // function to load data into the table
     children?: TableViewChild | TableViewChild[],
     onRowSelect?: (selectedRowKeys: Keys) => any; //Callback function run when selected row keys change to expose
-                                                        // keys for additional functionality until custom table actions can be implemented
+                                                  // keys for additional functionality until custom table actions can be implemented
+    search?: boolean, // enables search dialog to filter data
 }
 
 // In following API fulfilled promise defines success, rejected promise defines failure
@@ -41,12 +43,15 @@ export const TableViewContext = React.createContext<any>({});
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
-    const getTableData = () => props.loadData? props.loadData(): [];
+    const getTableData = () => props.loadData ? props.loadData() : [];
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
     const [tableData, setTableData]             = useState<T[]>(getTableData());
+    const [filteredData, setFilteredData]       = useState<T[]>([]); // Results of search
     const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
     const [isLoading, setLoading]               = useState(props.loading);
+    const [searchValue, setSearchValue]         = useState<string>("");
+    const [searchColumn, setSearchColumn]       = useState<string | undefined>(undefined); // Column to search in if specified
 
     // Make sure certain properties can be changed dynamically can be changed dynamically
     // Since verboseToolbar & loading state is never called in the TableView component
@@ -54,6 +59,15 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     useEffect(() => {setVerboseToolbar(props.verboseToolbar)},[props.verboseToolbar]);
     useEffect(() => {setLoading(props.loading)},[props.loading]);
     useEffect(() => {setTableData(getTableData())},[props.loadData]);
+
+    // Updates search results when a new search is run or when the dataset is altered
+    useEffect(() => {
+        console.log(searchValue);
+        if (searchValue) {
+            filterDataBySearch(searchValue, searchColumn && searchColumn);
+        }
+
+    }, [searchValue, tableData]);
 
     useEffect(() => {
         props.onRowSelect && props.onRowSelect(selectedRowKeys);
@@ -132,6 +146,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
         onRemove(tableData[itemIndex]).then(() => {
 
+            const newTableData = Array.from(tableData);
             measureTime("Table item removal", () => {
 
                 // let ndata = [...tableData];
@@ -140,18 +155,72 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
                 // Following goes again "no direct state update" rule, but it works fine with hooks and...
                 // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
-                tableData.splice(itemIndex, 1);
+                // tableData.splice(itemIndex, 1);
+                // Using splice prevents React from registering a change to the tableData when an item is removed, so
+                // any operation that's dependent upon that state change to trigger an update will not execute.
+
+
+                newTableData.splice(itemIndex, 1);
+                setTableData(newTableData);
 
             });
 
-            // Calculate appropriate selection index
-            itemIndex = itemIndex >= tableData.length ? itemIndex - 1 : itemIndex;
-            let selection = itemIndex < 0 || tableData.length == 0 ? [] : [tableData[itemIndex].key];
+            // Calculate appropriate selection index.  If table is displaying a filtered list of data, the new index
+            // may not appear in the subselection currently appearing.
+            const currentData = (searchValue && filteredData) ? filteredData : tableData;
+            itemIndex = itemIndex >= currentData.length ? itemIndex - 1 : itemIndex;
+            let selection = itemIndex < 0 || currentData.length == 0 ? [] : [currentData[itemIndex].key];
+            console.log(itemIndex, selection);
             selectionModel.set(selection);
 
         })
 
     }
+
+    function filterDataBySearch(searchValue: any, columnToSearch?: string) {
+        const allTableData = Array.from(tableData);
+        console.log("Filtering:", searchValue, columnToSearch);
+        if (!searchValue) {
+            setFilteredData([]);
+        } else if (columnToSearch && searchValue) {
+            //console.log(columnToSearch, searchValue);
+                setFilteredData(allTableData.filter(d =>
+                    d[columnToSearch]
+                        .toString()
+                        .toLowerCase()
+                        .includes(searchValue.toLowerCase())
+                ))
+        } else if (!columnToSearch && searchValue) {
+            // Working, but probably not the most performant solution
+            measureTime("Search all data", () => {
+                // Limit searched columns to those with searchable data values
+                const columnsWithData = columns!
+                    .filter((col: any) => col.dataIndex)
+                    .map((col: any) => col.dataIndex);
+                let searchAllResults: any[] = [];
+                for (let i = 0; i < allTableData.length; i++) {
+                    for (let j = 0; j < columnsWithData.length; j++) {
+                        if (
+                            allTableData[i][columnsWithData[j]]
+                                .toString()
+                                .toLowerCase()
+                                .includes(searchValue.toLowerCase())
+                        ) {
+                            searchAllResults.push(allTableData[i]);
+                            // Break loop when one column matches to prevent duplicate results
+                            break;
+                        }
+                    }
+                }
+                // Removing row selections for now, as they may not exist in the results,
+                // but it shouldn't be too difficult to preserve them if necessary
+                selectionModel.set([]);
+                console.log(searchAllResults);
+                setFilteredData(searchAllResults);
+            });
+        }
+    }
+
 
     const context = {
         selectedRowKeys: selectedRowKeys,
@@ -208,10 +277,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                         <div>{props.title && props.title(currentPageData)}</div>
                         <div style={{ display: "flex" }}>
                             {props.children}
+                            {props.search && <TableSearch searchValue={searchValue}
+                                                          setSearchValue={setSearchValue}
+                                                          columns={columns}
+                                                          searchColumn={searchColumn}
+                                                          setSearchColumn={setSearchColumn}
+                            />}
                         </div>
                     </div>
                 )}
-                dataSource={tableData}
+                dataSource={(searchValue && filteredData) ? filteredData : tableData}
                 rowSelection={{
                     selectedRowKeys: selectedRowKeys,
                     type: props.multipleSelection ? 'checkbox': 'radio',

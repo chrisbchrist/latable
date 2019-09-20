@@ -184,7 +184,7 @@ function UseApolloTableView(props: any) {
     >
       <RefreshTableAction />
       <Divider type="vertical" dashed={true} />
-      <InsertTableAction onInsert={CountrySupport.insertItem} />
+      <InsertTableAction customText="New" onInsert={CountrySupport.insertItem} />
       <UpdateTableAction onUpdate={CountrySupport.updateItem} />
       <RemoveTableAction onRemove={CountrySupport.confirmRemoval} />
     </ApolloTableView>
@@ -329,6 +329,7 @@ storiesOf("TableView", module)
           queryName="countries"
           multipleSelection={true}
           onRowSelect={(keys: Keys) => console.log("Selected Row Keys:", keys)}
+          search={true}
       />
   );
 });

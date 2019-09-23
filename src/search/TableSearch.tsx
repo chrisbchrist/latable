@@ -5,6 +5,7 @@ import React, {
 import { Input, Dropdown, Icon, Menu } from "antd";
 import { ClickParam } from "antd/es/menu";
 import {ColumnProps} from "antd/lib/table";
+import "./TableSearch.css";
 
 interface TableSearchProps {
     searchValue?: string;
@@ -17,6 +18,7 @@ interface TableSearchProps {
 const Search = Input.Search;
 
 export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, setSearchValue, columns, searchColumn, setSearchColumn, ...props }) => {
+    const [value, setValue] = useState<string>("");
     const [columnTitle, setColumnTitle] = useState<string>("All");
 
     const onClickMenu = (param: ClickParam) => {
@@ -25,6 +27,10 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
         //  so this checks if the first key was selected and then sets the search column as undefined
         setSearchColumn(param.key === "item_0" ? undefined : param.key);
         setColumnTitle(param.item.props.title);
+    };
+
+    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setValue(e.target.value);
     };
 
     const columnMenu = columns && (
@@ -49,6 +55,11 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
         setSearchValue(value);
     };
 
+    const onClear = (e: React.MouseEvent) => {
+        setValue("");
+        setSearchValue("");
+    };
+
     return (
         <div style={{ marginLeft: "auto" }} {...props}>
             {columns && <Dropdown className="filter" overlay={columnMenu}>
@@ -59,7 +70,8 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
             <Search
                 placeholder="Enter Title"
                 onSearch={onSearch}
-                allowClear
+                onChange={onChange}
+                suffix={value && <Icon onClick={onClear} type="close-circle" theme="filled" className="search__clear"/>}
                 style={{ width: 200 }}
             />
         </div>

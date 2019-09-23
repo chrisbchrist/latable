@@ -70,6 +70,7 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
             <Search
                 placeholder="Enter Title"
                 onSearch={onSearch}
+                value={value}
                 onChange={onChange}
                 suffix={value && <Icon onClick={onClear} type="close-circle" theme="filled" className="search__clear"/>}
                 style={{ width: 200 }}

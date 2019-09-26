@@ -165,13 +165,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
             });
 
-            // Calculate appropriate selection index.  If table is displaying a filtered list of data, the new index
-            // may not appear in the subselection currently appearing.
-            const currentData = (searchValue && filteredData) ? filteredData : tableData;
-            itemIndex = itemIndex >= currentData.length ? itemIndex - 1 : itemIndex;
-            let selection = itemIndex < 0 || currentData.length == 0 ? [] : [currentData[itemIndex].key];
-            console.log(itemIndex, selection);
-            selectionModel.set(selection);
+            // Calculate appropriate selection index.  If table is displaying a filtered list of data, ensure the new index
+            // exists in the current dataset. Since setState is async, tableData may not be
+            // updated when this is calculated, so we can use the new cloned data.
+                const currentData = (searchValue && filteredData) ? filteredData : newTableData;
+                console.log(itemIndex);
+                itemIndex = itemIndex >= currentData.length ? itemIndex - 1 : itemIndex;
+                let selection = itemIndex < 0 || currentData.length == 0 ? [] : [currentData[itemIndex].key];
+                console.log(itemIndex, selection);
+                selectionModel.set(selection);
+
 
         })
 

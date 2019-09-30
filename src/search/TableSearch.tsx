@@ -5,7 +5,6 @@ import React, {
 import { Input, Dropdown, Icon, Menu } from "antd";
 import { ClickParam } from "antd/es/menu";
 import {ColumnProps} from "antd/lib/table";
-import "./TableSearch.css";
 
 interface TableSearchProps {
     searchValue?: string;

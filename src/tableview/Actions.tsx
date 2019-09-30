@@ -108,18 +108,18 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
 export interface UpdateTableAction extends ReturnType<typeof UpdateTableAction> {}
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
-    onRemove: RemoveCallback<T>
+    onRemove: RemoveCallback<T>;
+    multiple?: boolean; // Flag to enable button for bulk deletion
 }
 
 export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActionProps<T>) {
-    const { onRemove, customText, ...rest} = props;
-    //TODO: Enable remove button for multiple selections after bulk removal is implemented
+    const { onRemove, customText, multiple, ...rest} = props;
     return (
         <TableActionBase<T>
             text={ customText || "Delete"}
             icon="delete"
             {...rest}
-            isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 }
+            isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 || !!(multiple && ctx.selectedRowKeys.length > 0)}
             doPerform = { ctx => ctx.removeSelectedItem(onRemove) }
         />
     );

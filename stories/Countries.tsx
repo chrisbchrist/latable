@@ -1,5 +1,5 @@
 import Modals from "../src/modal/ModalContaner";
-import {DomainEntity, Key} from "../src/domain/Domain";
+import {DomainEntity, Key, Keys} from "../src/domain/Domain";
 import PersonForm from "./PersonForm";
 import React from "react";
 import DefaultClient, {gql} from "apollo-boost";
@@ -84,7 +84,7 @@ export class CountrySupport {
 
     }
 
-    static confirmRemoval( country: Country ): Promise<boolean> {
+    static confirmRemoval( countryIds: Keys ): Promise<boolean> {
         return Modals.confirm({
             title: 'Delete selected Item?',
             content: 'Some descriptions here',

@@ -88,7 +88,7 @@ const data: Person[] = [
 //     </Button>
 //   ));
 
-function confirmRemoval(person: Person): Promise<boolean> {
+function confirmRemoval(personIds: Keys): Promise<boolean> {
   return Modals.confirm({
     title: "Delete selected Item?",
     content: "Some descriptions here",
@@ -186,7 +186,7 @@ function UseApolloTableView(props: any) {
       <Divider type="vertical" dashed={true} />
       <InsertTableAction customText="New" onInsert={CountrySupport.insertItem} />
       <UpdateTableAction onUpdate={CountrySupport.updateItem} />
-      <RemoveTableAction onRemove={CountrySupport.confirmRemoval} />
+      <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
     </ApolloTableView>
   );
 }

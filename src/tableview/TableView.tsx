@@ -10,6 +10,7 @@ import {TableSearch} from "../search/TableSearch";
 import {Omit} from "antd/es/_util/type";
 import {measureTime} from "../Tools";
 import uuid from "uuid";
+import "../indigo.css";
 
 type TableViewChild = TableAction | React.ReactNode
 
@@ -17,17 +18,19 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     disableContextMenu?: boolean  // disables context action menu
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
+    bulkDelete?: boolean;         // allows deletion of multiple records at once in concert with multiple selection
     loadData?: () => T[];         // function to load data into the table
     children?: TableViewChild | TableViewChild[],
     onRowSelect?: (selectedRowKeys: Keys) => any; //Callback function run when selected row keys change to expose
                                                   // keys for additional functionality until custom table actions can be implemented
     search?: boolean, // enables search dialog to filter data
+
 }
 
 // In following API fulfilled promise defines success, rejected promise defines failure
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T>;
 export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T>;
-export type RemoveCallback<T extends DomainEntity> = (item: T)  => Promise<boolean>;
+export type RemoveCallback<T extends DomainEntity> = (keys: Keys)  => Promise<boolean>;
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -144,9 +147,10 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex < 0 ) return;
 
-        onRemove(tableData[itemIndex]).then(() => {
+        onRemove(selectedRowKeys).then(() => {
 
-            const newTableData = Array.from(tableData);
+            // Deep copy data to prevent direct state mutation
+            let newTableData = Array.from(tableData);
             measureTime("Table item removal", () => {
 
                 // let ndata = [...tableData];
@@ -156,11 +160,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 // Following goes again "no direct state update" rule, but it works fine with hooks and...
                 // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
                 // tableData.splice(itemIndex, 1);
-                // Using splice prevents React from registering a change to the tableData when an item is removed, so
-                // any operation that's dependent upon that state change to trigger an update will not execute.
 
+                // Using splice prevents React from listening to changes in tableData when an item is removed/changed, so
+                // any operation that's dependent upon that state change to trigger an update will not execute. Not as
+                // performant, but still not noticeably slow.
+                if (selectedRowKeys.length > 1) {
+                    newTableData = newTableData.filter(d => !selectedRowKeys.includes(d.key))
+                } else {
+                    newTableData.splice(itemIndex, 1);
+                }
 
-                newTableData.splice(itemIndex, 1);
                 setTableData(newTableData);
 
             });
@@ -182,7 +191,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function filterDataBySearch(searchValue: any, columnToSearch?: string) {
         const allTableData = Array.from(tableData);
-        console.log("Filtering:", searchValue, columnToSearch);
         if (!searchValue) {
             setFilteredData([]);
         } else if (columnToSearch && searchValue) {
@@ -241,7 +249,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 {React.Children.toArray(props.children).reduce(reduceToMenu, [])}
             </Menu>
         );
-    }
+    };
 
     // Renders values of table with context menu
     function renderCell(value: any) {

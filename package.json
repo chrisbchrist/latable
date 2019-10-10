@@ -1,6 +1,6 @@
 {
   "name": "@nextera/indigo",
-  "version": "0.3.21",
+  "version": "0.4.0",
   "private": false,
   "license": "UNLICENSED",
   "main": "dist/index.js",
@@ -26,7 +26,9 @@
     "babel-loader": "^8.0.5",
     "cpx": "^1.5.0",
     "formik": "^1.5.4",
+    "react-base-table": "^1.9.0",
     "react-scripts": "2.1.8",
+    "react-virtualized": "^9.21.1",
     "typescript": "3.4.3",
     "uuid": "^3.3.2",
     "yup": "^0.27.0"
@@ -42,6 +44,7 @@
     "@types/storybook__addon-knobs": "^5.0.2",
     "@types/storybook__react": "^4.0.1",
     "@types/yup": "^0.26.23",
+    "@welldone-software/why-did-you-render": "^3.3.5",
     "apollo-boost": "^0.4.3",
     "graphql": "^14.4.2"
   },

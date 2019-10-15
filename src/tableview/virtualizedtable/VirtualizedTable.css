@@ -1,0 +1,17 @@
+.ReactVirtualized__Table__headerColumn {
+    padding: 15px;
+    background: #fafafa;
+}
+
+.ReactVirtualized__Table__headerRow {
+    height: auto;
+    border: 1px solid #ddd;
+}
+
+.ReactVirtualized__Table__rowColumn {
+    padding: 16px;
+}
+
+.ReactVirtualized__Table__headerColumn, .ReactVirtualized__Table__rowColumn {
+    margin: 0 !important;
+}

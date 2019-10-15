@@ -52,7 +52,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [tableData, setTableData]             = useState<T[]>(getTableData());
     const [filteredData, setFilteredData]       = useState<T[]>([]); // Results of search
     const [verboseToolbar, setVerboseToolbar]   = useState(props.verboseToolbar);
-    const [isLoading, setLoading]               = useState(props.loading);
+    const [isLoading, setLoading]               = useState(loading);
     const [searchValue, setSearchValue]         = useState<string>("");
     const [searchColumn, setSearchColumn]       = useState<string | undefined>(undefined); // Column to search in if specified
 
@@ -63,15 +63,16 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     useEffect(() => {setLoading(props.loading)},[props.loading]);
     useEffect(() => {setTableData(getTableData())},[props.loadData]);
 
-    // Updates search results when a new search is run or when the dataset is altered
+    // Updates search results when a new search is run or when a search is active & the dataset is altered
     useEffect(() => {
-        console.log(searchValue);
+        //console.log(searchValue);
         if (searchValue) {
             filterDataBySearch(searchValue, searchColumn && searchColumn);
         }
 
     }, [searchValue, tableData]);
 
+    // Runs optional callback on selected row keys when they change to expose them to external components
     useEffect(() => {
         props.onRowSelect && props.onRowSelect(selectedRowKeys);
     }, [selectedRowKeys]);
@@ -147,42 +148,45 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         let itemIndex = tableData.findIndex( item => item.key === selectedRowKeys[0]);
         if ( itemIndex < 0 ) return;
 
-        onRemove(selectedRowKeys).then(() => {
+        onRemove(selectedRowKeys).then((res) => {
+            // If confirmation is cancelled, response will be false
+            if (res) {
+                // Deep copy data to prevent direct state mutation
+                let newTableData = Array.from(tableData);
+                measureTime("Table item removal", () => {
 
-            // Deep copy data to prevent direct state mutation
-            let newTableData = Array.from(tableData);
-            measureTime("Table item removal", () => {
+                    // let ndata = [...tableData];
+                    // ndata.splice(itemIndex, 1);
+                    // setTableData(ndata);
 
-                // let ndata = [...tableData];
-                // ndata.splice(itemIndex, 1);
-                // setTableData(ndata);
+                    // Following goes again "no direct state update" rule, but it works fine with hooks and...
+                    // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
+                    // tableData.splice(itemIndex, 1);
 
-                // Following goes again "no direct state update" rule, but it works fine with hooks and...
-                // The removal operation is almost 1000x faster, which makes a huge visual difference for big data sets
-                // tableData.splice(itemIndex, 1);
+                    // Using splice prevents React from listening to changes in tableData when an item is removed/changed, so
+                    // any operation that's dependent upon that state change to trigger an update will not execute. Not as
+                    // performant, but seems manageable for the time being.
+                    if (selectedRowKeys.length > 1) {
+                        newTableData = newTableData.filter(d => !selectedRowKeys.includes(d.key))
+                    } else {
+                        newTableData.splice(itemIndex, 1);
+                    }
 
-                // Using splice prevents React from listening to changes in tableData when an item is removed/changed, so
-                // any operation that's dependent upon that state change to trigger an update will not execute. Not as
-                // performant, but still not noticeably slow.
-                if (selectedRowKeys.length > 1) {
-                    newTableData = newTableData.filter(d => !selectedRowKeys.includes(d.key))
-                } else {
-                    newTableData.splice(itemIndex, 1);
-                }
+                    setTableData(newTableData);
 
-                setTableData(newTableData);
+                });
 
-            });
-
-            // Calculate appropriate selection index.  If table is displaying a filtered list of data, ensure the new index
-            // exists in the current dataset. Since setState is async, tableData may not be
-            // updated when this is calculated, so we can use the new cloned data.
+                // Calculate appropriate selection index.  If table is displaying a filtered list of data, ensure the new index
+                // exists in the current dataset. Since setState is async, tableData may not be
+                // updated when this is calculated, so we can use the new cloned data.
                 const currentData = (searchValue && filteredData) ? filteredData : newTableData;
-                console.log(itemIndex);
+                //console.log(itemIndex);
                 itemIndex = itemIndex >= currentData.length ? itemIndex - 1 : itemIndex;
                 let selection = itemIndex < 0 || currentData.length == 0 ? [] : [currentData[itemIndex].key];
-                console.log(itemIndex, selection);
+                //console.log(itemIndex, selection);
                 selectionModel.set(selection);
+            }
+
 
 
         })
@@ -299,8 +303,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 )}
                 dataSource={(searchValue && filteredData) ? filteredData : tableData}
                 rowSelection={{
-                    selectedRowKeys: selectedRowKeys,
-                    type: props.multipleSelection ? 'checkbox': 'radio',
+                    selectedRowKeys: selectedRowKeys as (string[] | number[]),
+                    type: props.multipleSelection ? 'checkbox' as any: 'radio' as any,
                     onChange: (keys) => selectionModel.set(keys as Key[])
                 }}
                 onRow={(record) => ({

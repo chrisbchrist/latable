@@ -9,7 +9,7 @@ export interface Country extends DomainEntity {
     name: string,
     currency: string,
     phone: string
-}
+};
 
 export class CountrySupport {
 
@@ -85,13 +85,19 @@ export class CountrySupport {
     }
 
     static confirmRemoval( countryIds: Keys ): Promise<boolean> {
+
+        // let arr = countryIds.map(id => id);
+
         return Modals.confirm({
-            title: 'Delete selected Item?',
+            title: `Delete ${countryIds.length > 1 ? countryIds.length : ""} selected ${countryIds.length > 1 ? 'items' : 'item'}?`,
             content: 'Some descriptions here',
-            okType: 'primary'
+            okType: 'primary',
+            onOk: () => true,
+            onCancel: () => false,
         }).then( (res) => {
+                console.log("res", res);
                 return res;
-        });
+        }).catch(err => false)
     }
 
 }

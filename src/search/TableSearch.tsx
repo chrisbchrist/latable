@@ -22,8 +22,8 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
 
     const onClickMenu = (param: ClickParam) => {
         console.log(param.key);
-        // AntD does not allow undefined or null menu keys, they will be set as a generic "item_index" string,
-        //  so this checks if the first key was selected and then sets the search column as undefined
+        // AntD does not allow undefined or null menu keys, they will be set as a generic "item_[index]" string,
+        //  so this checks if the first key (selection checkbox column) was selected and then sets the search column as undefined
         setSearchColumn(param.key === "item_0" ? undefined : param.key);
         setColumnTitle(param.item.props.title);
     };
@@ -39,9 +39,9 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
             </Menu.Item>
             {columns.map((col: any) => {
                 // For now, limit searchable columns to those that have searchable values in table data
-                if (col.dataIndex)
+                if (col.dataKey)
                     return (
-                        <Menu.Item key={col.dataIndex} title={col.title}>
+                        <Menu.Item key={col.dataKey} title={col.title}>
                             {col.title}
                         </Menu.Item>
                     );
@@ -55,6 +55,7 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
     };
 
     const onClear = (e: React.MouseEvent) => {
+        // State setters are async, but order doesn't really matter here
         setValue("");
         setSearchValue("");
     };

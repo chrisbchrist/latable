@@ -1,10 +1,15 @@
 import React from "react";
 const uuid4 = require("uuid/v4");
+//@ts-ignore
+import {generateData } from 'react-base-table'
 
+// const sampleData = generateData(10000);
+// console.log(sampleData)
 import { storiesOf } from "@storybook/react";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
 
 import { Divider } from "antd";
+import {NewTable} from "../src/tableview/NewTable";
 
 import TableView from "../src/tableview/TableView";
 import {
@@ -22,6 +27,36 @@ import { Country, CountrySupport } from "./Countries";
 import { useQuery } from "@apollo/react-hooks";
 import { ApolloTableView } from "../src/tableview/ApolloTableView";
 import {Keys} from "../src/domain/Domain";
+import {ResizeWrapper} from "../src/tableview/newtable/ResizeWrapper";
+import { VirtualizedTable } from "../src/tableview/virtualizedtable/VirtualizedTable";
+
+
+const newColumns = [
+  {
+    title: "First Name",
+    dataKey: "firstName",
+    key: "firstName",
+    width: 150,
+  },
+  {
+    title: "Last Name",
+    dataKey: "lastName",
+    key: "lastName",
+    width: 150,
+  },
+  {
+    title: "Age",
+    dataKey: "age",
+    key: "age",
+    width: 150,
+  },
+  {
+    title: "Profession",
+    dataKey: "profession",
+    key: "profession",
+    width: 150,
+  }
+];
 
 //TODO derive columns from domain entity
 const columns = [
@@ -174,7 +209,7 @@ function UseApolloTableView(props: any) {
       queryName="countries"
       columnDefs={props.columnDefs}
       query={props.query}
-      pagination={{ pageSize: 25 }}
+      pagination={{ pageSize: 50 }}
       bordered
       // scroll={{y: 500, x: 1100}}
       verboseToolbar={boolean(verboseToolbarTitle, false)}
@@ -186,10 +221,47 @@ function UseApolloTableView(props: any) {
       <Divider type="vertical" dashed={true} />
       <InsertTableAction customText="New" onInsert={CountrySupport.insertItem} />
       <UpdateTableAction onUpdate={CountrySupport.updateItem} />
-      <RemoveTableAction onRemove={CountrySupport.confirmRemoval}/>
+      <RemoveTableAction onRemove={CountrySupport.confirmRemoval} multiple={true}/>
     </ApolloTableView>
   );
 }
+
+storiesOf("New Table", module)
+    .add("Test", () => {
+      return <NewTable
+                columns={newColumns}
+                loadData={() => data}
+                rowSelection={"multiple"}
+                onRowSelect={(keys) => console.log(keys)}
+                multipleSelection={true}
+                search={true}
+      />
+    })
+    .add("Resize Wrapper", () => {
+      const testStyles = (w: any, h: any) => {
+        return {
+        width: w + 'px',
+        height: h + 'px',
+        background: 'blue',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      };
+        }
+      return (
+          <ResizeWrapper>
+            {(width: any, height: any) => {
+              return <div style={testStyles(width, height)}>{`I am a blue dude and I am ${width} by ${height}`}</div>
+            }}
+          </ResizeWrapper>
+      )
+    });
+
+storiesOf("Virtualized Table", module)
+    .add("Test", () => {
+      return <VirtualizedTable/>
+    })
 
 storiesOf("TableView", module)
   .addDecorator(withKnobs)

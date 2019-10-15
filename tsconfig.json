@@ -35,7 +35,10 @@
     "strict": true,
     "resolveJsonModule": true,
     "isolatedModules": false,
-    "noEmit": false
+    "noEmit": false,
+    "typeRoots": ["./node_modules/@types",
+      "./src/types"
+    ]
   },
   "include": [
     "src/**/*"

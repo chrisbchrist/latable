@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {InsertCallback, RemoveCallback, UpdateCallback, TableViewContext} from "./TableView"
+import {InsertCallback, RemoveCallback, RemoveMultipleCallback, UpdateCallback, TableViewContext} from "./TableView"
 import ActionButton, {ActionButtonProps, ActionMenuItem} from "../action/ActionButton";
 import {DomainEntity} from "../domain/Domain";
 import {Omit} from "antd/es/_util/type";
@@ -109,6 +109,7 @@ export interface UpdateTableAction extends ReturnType<typeof UpdateTableAction> 
 
 export interface RemoveTableActionProps<T extends DomainEntity> extends TableActionProps {
     onRemove: RemoveCallback<T>;
+    onRemoveMultiple?: RemoveMultipleCallback;
     multiple?: boolean; // Flag to enable button for bulk deletion
 }
 

@@ -31,6 +31,7 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
 export type InsertCallback<T extends DomainEntity> = (item?: T) => Promise<T>;
 export type UpdateCallback<T extends DomainEntity> = (item: T)  => Promise<T>;
 export type RemoveCallback<T extends DomainEntity> = (keys: Keys)  => Promise<boolean>;
+export type RemoveMultipleCallback = (keys: Keys) => Promise<boolean>
 
 export interface TableViewContext<T extends DomainEntity> {
     selectedRowKeys: Keys;
@@ -215,15 +216,17 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 let searchAllResults: any[] = [];
                 for (let i = 0; i < allTableData.length; i++) {
                     for (let j = 0; j < columnsWithData.length; j++) {
-                        if (
-                            allTableData[i][columnsWithData[j]]
+                        const columnValue = allTableData[i][columnsWithData[j]];
+                        if (columnValue) {
+                            if (columnValue
                                 .toString()
                                 .toLowerCase()
                                 .includes(searchValue.toLowerCase())
-                        ) {
-                            searchAllResults.push(allTableData[i]);
-                            // Break loop when one column matches to prevent duplicate results
-                            break;
+                            ) {
+                                searchAllResults.push(allTableData[i]);
+                                // Break loop when one column matches to prevent duplicate results
+                                break;
+                            }
                         }
                     }
                 }

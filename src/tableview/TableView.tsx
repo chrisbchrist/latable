@@ -10,7 +10,6 @@ import {TableSearch} from "../search/TableSearch";
 import {Omit} from "antd/es/_util/type";
 import {measureTime} from "../Tools";
 import uuid from "uuid";
-import "../indigo.css";
 
 type TableViewChild = TableAction | React.ReactNode
 
@@ -218,6 +217,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     for (let j = 0; j < columnsWithData.length; j++) {
                         const columnValue = allTableData[i][columnsWithData[j]];
                         if (columnValue) {
+                            console.log("columnValue", columnValue);
                             if (columnValue
                                 .toString()
                                 .toLowerCase()

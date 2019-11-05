@@ -217,7 +217,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     for (let j = 0; j < columnsWithData.length; j++) {
                         const columnValue = allTableData[i][columnsWithData[j]];
                         if (columnValue) {
-                            console.log("columnValue", columnValue);
                             if (columnValue
                                 .toString()
                                 .toLowerCase()

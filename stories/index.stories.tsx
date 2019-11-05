@@ -29,6 +29,7 @@ import { ApolloTableView } from "../src/tableview/ApolloTableView";
 import {Keys} from "../src/domain/Domain";
 import {ResizeWrapper} from "../src/tableview/newtable/ResizeWrapper";
 import { VirtualizedTable } from "../src/tableview/virtualizedtable/VirtualizedTable";
+import "antd/dist/antd.min.css";
 
 
 const newColumns = [
@@ -82,6 +83,28 @@ const columns = [
   }
 ];
 
+const virtualColumns = [
+  {
+    title: "Name",
+    dataIndex: "name",
+    width: 200,
+  },
+  {
+    title: "Job",
+    dataIndex: "description",
+    width: 400,
+  }
+];
+
+const virtualData = [
+  { name: 'Brian Vaughn', description: 'Software engineer' },
+  { name: 'Joe Sklorp', description: 'Software engineer' },
+  { name: 'Sally Findow', description: 'Software engineer' },
+  { name: 'Mac Attax', description: 'Software engineer' },
+  { name: 'Bilbo Silverworth', description: 'Software engineer' }
+  // And so on...
+];
+
 function age(bd: Date): number {
   let diff = (new Date().getTime() - bd.getTime()) / 1000 / (60 * 60 * 24);
   return Math.abs(Math.floor(diff / 365.25));
@@ -111,17 +134,6 @@ const data: Person[] = [
   }
 ];
 
-// storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
-
-// storiesOf('Button', module)
-//   .add('with text', () => <Button onClick={action('clicked')}>Hello Button</Button>)
-//   .add('with some emoji', () => (
-//     <Button onClick={action('clicked')}>
-//       <span role="img" aria-label="so cool">
-//         😀 😎 👍 💯
-//       </span>
-//     </Button>
-//   ));
 
 function confirmRemoval(personIds: Keys): Promise<boolean> {
   return Modals.confirm({
@@ -260,7 +272,7 @@ storiesOf("New Table", module)
 
 storiesOf("Virtualized Table", module)
     .add("Test", () => {
-      return <VirtualizedTable/>
+      return <VirtualizedTable columns={virtualColumns} loadData={() => virtualData}/>
     })
 
 storiesOf("TableView", module)
@@ -366,11 +378,6 @@ storiesOf("TableView", module)
       <UseApolloTableView
         columnDefs={{
           keyColumn: "code"
-          // columns: [{
-          //     title: 'Code',
-          //     dataIndex: 'key',
-          //     key: 'key',
-          // }],
         }}
         query="{ countries { key:code }}"
         queryName="countries"

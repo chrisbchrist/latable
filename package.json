@@ -49,7 +49,7 @@
     "graphql": "^14.4.2"
   },
   "scripts": {
-    "prepare": "tsc && cpx src/**/*.css dist && echo 'Finished building NPM package'",
+    "prepare": "tsc && cpx src/*.css dist && echo 'Finished building NPM package'",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

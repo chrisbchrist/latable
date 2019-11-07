@@ -13,5 +13,7 @@ module.exports = ({ config, mode }) => {
             }],
     });
     config.resolve.extensions.push('.ts', '.tsx');
+    // Forces Webpack to ignore Node-only package required by Excel libraries
+    config.node = { fs: 'empty'};
     return config;
 };

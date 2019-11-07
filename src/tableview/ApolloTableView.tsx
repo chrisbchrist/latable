@@ -46,7 +46,7 @@ export function ApolloTableView<T extends DomainEntity>(
   props: ApolloTableViewProps<T>
 ) {
   const { client, columnDefs, entityName, ...otherProps } = props;
-   const { defaultSorters } = columnDefs;
+  const { defaultSorters } = columnDefs;
   const queryName = props.queryName || "findAll";
   const excludedColumns = !props.columnDefs.excludeColumns
     ? []

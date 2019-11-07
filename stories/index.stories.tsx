@@ -13,6 +13,7 @@ import {NewTable} from "../src/tableview/NewTable";
 
 import TableView from "../src/tableview/TableView";
 import {
+  ExportTableAction,
   InsertTableAction,
   RefreshTableAction,
   RemoveTableAction,
@@ -234,6 +235,7 @@ function UseApolloTableView(props: any) {
       <InsertTableAction customText="New" onInsert={CountrySupport.insertItem} />
       <UpdateTableAction onUpdate={CountrySupport.updateItem} />
       <RemoveTableAction onRemove={CountrySupport.confirmRemoval} multiple={true}/>
+      <ExportTableAction />
     </ApolloTableView>
   );
 }

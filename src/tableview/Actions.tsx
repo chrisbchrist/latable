@@ -4,6 +4,12 @@ import ActionButton, {ActionButtonProps, ActionMenuItem} from "../action/ActionB
 import {DomainEntity} from "../domain/Domain";
 import {Omit} from "antd/es/_util/type";
 import {ContextMenuDropdownContext} from "./ContextMenuDropdown";
+import ReactExport from 'react-export-excel';
+import {ColumnProps} from "antd/lib/table";
+
+const ExcelFile = ReactExport.ExcelFile;
+const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
 // Excludes perform property since it should be defined internally by each table action
 export interface TableActionProps extends Omit<ActionButtonProps, 'perform'> {
@@ -54,7 +60,7 @@ function TableActionBase<T extends DomainEntity>( config: TableActionConfig<T> )
 
 }
 
-export type TableAction = RefreshTableAction | InsertTableAction | UpdateTableAction | RemoveTableAction
+export type TableAction = RefreshTableAction | InsertTableAction | UpdateTableAction | RemoveTableAction | ExportTableAction
 
 export function RefreshTableAction<T extends DomainEntity>(props: TableActionProps) {
     const { customText, ...rest } = props;
@@ -127,3 +133,37 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
 }
 
 export interface RemoveTableAction extends ReturnType<typeof RemoveTableAction> {}
+
+export interface ExportTableActionProps<T extends DomainEntity> extends TableActionProps {
+    name?: string;
+    fileExtension?: string;
+    fileName?: string;
+}
+
+export function ExportTableAction<T extends DomainEntity>(props: ExportTableActionProps<T>) {
+    const { customText, name, fileName, fileExtension, ...rest } = props;
+    const { columns, tableData } = useContext(TableViewContext);
+    const ExportButton = (
+        <TableActionBase<T>
+            text={customText || "Export"}
+            icon="file-excel"
+            doPerform={() => null}
+            {...rest}
+        />
+    );
+
+    return (
+        <ExcelFile element={ExportButton} filename={fileName || "Document"} fileExtension={fileExtension || "xlsx"}>
+            <ExcelSheet name={name || ""} data={tableData && tableData}>
+            {columns.map((col: ColumnProps<T>) => {
+                if (col.dataIndex) {
+                   return <ExcelColumn label={col.title} value={col.dataIndex}/>
+                }
+                return false;
+            })}
+            </ExcelSheet>
+        </ExcelFile>
+    )
+}
+
+export interface ExportTableAction extends ReturnType<typeof ExportTableAction> {}

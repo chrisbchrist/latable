@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
@@ -23,6 +23,7 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     onRowSelect?: (selectedRowKeys: Keys) => any; //Callback function run when selected row keys change to expose
                                                   // keys for additional functionality until custom table actions can be implemented
     search?: boolean, // enables search dialog to filter data
+    disableRowSelection?: boolean; //Disables selection completely
 
 }
 
@@ -45,7 +46,7 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    const {columns, loading, title, rowSelection, onRow, ...otherProps } = props;
+    const {columns, loading, title, rowSelection, disableRowSelection, onRow, ...otherProps } = props;
     const getTableData = () => props.loadData ? props.loadData() : [];
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
@@ -55,6 +56,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [isLoading, setLoading]               = useState(loading);
     const [searchValue, setSearchValue]         = useState<string>("");
     const [searchColumn, setSearchColumn]       = useState<string | undefined>(undefined); // Column to search in if specified
+
+    // Define row selection props to allow disabling selection.  Need to find a way to memoize this value
+    // to prevent recalculating on every render.
+    const selectionConfig = disableRowSelection ? {} : {
+            selectedRowKeys: selectedRowKeys as (string[] | number[]),
+            type: props.multipleSelection ? 'checkbox' as any: 'radio' as any,
+            onChange: (keys: Keys) => selectionModel.set(keys as Key[])
+        };
 
     // Make sure certain properties can be changed dynamically can be changed dynamically
     // Since verboseToolbar & loading state is never called in the TableView component
@@ -238,7 +247,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
-
     const context = {
         selectedRowKeys: selectedRowKeys,
         verboseToolbar: verboseToolbar,
@@ -246,7 +254,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         insertSelectedItem: insertSelectedItem,
         updateSelectedItem: updateSelectedItem,
         removeSelectedItem: removeSelectedItem,
-
+        columns,
+        tableData
     };
 
     function buildContextMenu() {
@@ -304,11 +313,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     </div>
                 )}
                 dataSource={(searchValue && filteredData) ? filteredData : tableData}
-                rowSelection={{
-                    selectedRowKeys: selectedRowKeys as (string[] | number[]),
-                    type: props.multipleSelection ? 'checkbox' as any: 'radio' as any,
-                    onChange: (keys) => selectionModel.set(keys as Key[])
-                }}
+                rowSelection={selectionConfig}
                 onRow={(record) => ({
                     onClick: () => selectRow(record),
                     onContextMenu: () => selectRow(record),

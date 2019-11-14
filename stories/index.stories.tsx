@@ -8,7 +8,7 @@ import {generateData } from 'react-base-table'
 import { storiesOf } from "@storybook/react";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
 
-import { Divider } from "antd";
+import {Divider, Tag} from "antd";
 import {NewTable} from "../src/tableview/NewTable";
 
 import TableView from "../src/tableview/TableView";
@@ -81,8 +81,13 @@ const columns = [
     title: "Profession",
     dataIndex: "profession",
     key: "profession"
+  },
+  {
+    title: "Custom",
+    render: (record: any) => <Tag>I AM A THING</Tag>
   }
 ];
+
 
 const virtualColumns = [
   {
@@ -111,26 +116,26 @@ function age(bd: Date): number {
   return Math.abs(Math.floor(diff / 365.25));
 }
 
-const data: Person[] = [
+const data: any= [
   {
     key: uuid4(),
     firstName: "Jason",
     lastName: "Rocco",
-    age: age(new Date(1971, 9, 15)),
+    age: age(new Date(1971, 9, 15)).toString(),
     profession: "Director"
   },
   {
     key: uuid4(),
     firstName: "Roman",
     lastName: "Vorobiev",
-    age: age(new Date(1966, 7, 7)),
+    age: age(new Date(1966, 7, 7)).toString(),
     profession: "Software Developer"
   },
   {
     key: uuid4(),
     firstName: "Vladimir",
     lastName: "Birbrier",
-    age: age(new Date(1978, 9, 15)),
+    age: age(new Date(1978, 9, 15)).toString(),
     profession: "Software Developer"
   }
 ];
@@ -296,6 +301,7 @@ storiesOf("TableView", module)
         <InsertTableAction onInsert={insertItem} />
         <UpdateTableAction onUpdate={updateItem} />
         <RemoveTableAction onRemove={confirmRemoval} />
+        <ExportTableAction/>
       </TableView>
     );
   })

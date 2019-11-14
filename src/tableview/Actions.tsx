@@ -138,11 +138,15 @@ export interface ExportTableActionProps<T extends DomainEntity> extends TableAct
     name?: string;
     fileExtension?: string;
     fileName?: string;
+    sheetName?: string;
 }
 
+// Not working in context menu yet
 export function ExportTableAction<T extends DomainEntity>(props: ExportTableActionProps<T>) {
     const { customText, name, fileName, fileExtension, ...rest } = props;
     const { columns, tableData } = useContext(TableViewContext);
+    console.log(columns);
+
     const ExportButton = (
         <TableActionBase<T>
             text={customText || "Export"}
@@ -152,18 +156,20 @@ export function ExportTableAction<T extends DomainEntity>(props: ExportTableActi
         />
     );
 
-    return (
-        <ExcelFile element={ExportButton} filename={fileName || "Document"} fileExtension={fileExtension || "xlsx"}>
-            <ExcelSheet name={name || ""} data={tableData && tableData}>
-            {columns.map((col: ColumnProps<T>) => {
-                if (col.dataIndex) {
-                   return <ExcelColumn label={col.title} value={col.dataIndex}/>
-                }
-                return false;
-            })}
-            </ExcelSheet>
-        </ExcelFile>
-    )
+    if (columns.length > 0) {
+        return (
+            <ExcelFile element={ExportButton} filename={fileName || "Document"}>
+                <ExcelSheet name={name || "Document"} data={tableData && tableData}>
+                    {columns && columns.filter((col: ColumnProps<T>) => col.dataIndex).map((col: ColumnProps<T>, i: number) => {
+                            return <ExcelColumn key={col.dataIndex! + i} label={col.title} value={col.dataIndex}/>
+                    })}
+                </ExcelSheet>
+            </ExcelFile>
+        )
+    } else {
+        return ExportButton;
+    }
+
 }
 
 export interface ExportTableAction extends ReturnType<typeof ExportTableAction> {}

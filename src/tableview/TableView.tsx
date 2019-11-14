@@ -57,7 +57,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [searchValue, setSearchValue]         = useState<string>("");
     const [searchColumn, setSearchColumn]       = useState<string | undefined>(undefined); // Column to search in if specified
 
-    // Define row selection props to allow disabling selection.  Need to find a way to memoize this value
+    // Define row selection props to allow disabling selection.  Should find a way to memoize this value
     // to prevent recalculating on every render.
     const selectionConfig = disableRowSelection ? {} : {
             selectedRowKeys: selectedRowKeys as (string[] | number[]),
@@ -254,7 +254,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         insertSelectedItem: insertSelectedItem,
         updateSelectedItem: updateSelectedItem,
         removeSelectedItem: removeSelectedItem,
-        columns,
+        columns: columns && columns,
         tableData
     };
 
@@ -274,6 +274,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     function mapColumns(col: any) {
         return {
             ...col,
+            // If column has a custom render function, pass the result as the value to be wrapped by the context menu
             render: col.render
                 ? (value: any) => (
                     <ContextMenuDropdown
@@ -287,7 +288,6 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function decoratedColumns(): ColumnProps<T>[] | undefined {
         if (props.disableContextMenu) return props.columns;
-        // Replace rendering of the table values to show context menu
         return props.columns && props.columns.map(mapColumns);
     }
 

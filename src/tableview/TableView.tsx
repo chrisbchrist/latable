@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Table} from 'antd';
+import {Select, Table} from 'antd';
 import {DomainEntity, Key, Keys} from "../domain/Domain";
 import SelectionModel, {getSelectionModel} from "./SelectionModel";
 import {ColumnProps, TableProps} from "antd/es/table";
@@ -13,7 +13,13 @@ import uuid from "uuid";
 
 type TableViewChild = TableAction | React.ReactNode
 
-export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<T>, 'dataSource'> {
+export interface TableViewColumn<T extends DomainEntity> extends ColumnProps<T> {
+    disableClick?: boolean; // Prevents event bubbling to disable row selection on click for cells that need to be
+                            // interacted with
+}
+
+export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<T>, 'dataSource' | 'columns'> {
+    columns: TableViewColumn<T>[]; // AntD columns with custom props
     disableContextMenu?: boolean  // disables context action menu
     verboseToolbar?: boolean;     // show titles of the action buttons
     multipleSelection?: boolean;  // allow multiple selection
@@ -23,8 +29,8 @@ export interface TableViewProps<T extends DomainEntity> extends Omit<TableProps<
     onRowSelect?: (selectedRowKeys: Keys) => any; //Callback function run when selected row keys change to expose
                                                   // keys for additional functionality until custom table actions can be implemented
     search?: boolean, // enables search dialog to filter data
-    disableRowSelection?: boolean; //Disables selection completely
-
+    filters?: Array<{ label: string; condition: (record: T) => boolean }>, // Array of global filters with labels and filter functions
+    // disableRowSelection?: boolean; //Disables selection completely
 }
 
 // In following API fulfilled promise defines success, rejected promise defines failure
@@ -46,7 +52,7 @@ export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
-    const {columns, loading, title, rowSelection, disableRowSelection, onRow, ...otherProps } = props;
+    const {columns, loading, title, filters, onRow, ...otherProps } = props;
     const getTableData = () => props.loadData ? props.loadData() : [];
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
@@ -56,14 +62,8 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
     const [isLoading, setLoading]               = useState(loading);
     const [searchValue, setSearchValue]         = useState<string>("");
     const [searchColumn, setSearchColumn]       = useState<string | undefined>(undefined); // Column to search in if specified
+    const [activeFilter, setActiveFilter]       = useState<any>(undefined);
 
-    // Define row selection props to allow disabling selection.  Should find a way to memoize this value
-    // to prevent recalculating on every render.
-    const selectionConfig = disableRowSelection ? {} : {
-            selectedRowKeys: selectedRowKeys as (string[] | number[]),
-            type: props.multipleSelection ? 'checkbox' as any: 'radio' as any,
-            onChange: (keys: Keys) => selectionModel.set(keys as Key[])
-        };
 
     // Make sure certain properties can be changed dynamically can be changed dynamically
     // Since verboseToolbar & loading state is never called in the TableView component
@@ -204,6 +204,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
     function filterDataBySearch(searchValue: any, columnToSearch?: string) {
         const allTableData = Array.from(tableData);
+        //TODO: Refactor nonsense conditional
         if (!searchValue) {
             setFilteredData([]);
         } else if (columnToSearch && searchValue) {
@@ -247,6 +248,18 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         }
     }
 
+    function filterData(data: Array<T>) {
+        if (filters && activeFilter !== undefined) {
+            return data.filter(filters[activeFilter].condition);
+        }
+        return data;
+
+    }
+
+    function onChangeFilter(value: any) {
+        setActiveFilter(value);
+    }
+
     const context = {
         selectedRowKeys: selectedRowKeys,
         verboseToolbar: verboseToolbar,
@@ -258,13 +271,15 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         tableData
     };
 
+
     function buildContextMenu() {
         return (
             <Menu>
                 {React.Children.toArray(props.children).reduce(reduceToMenu, [])}
             </Menu>
         );
-    };
+    }
+
 
     // Renders values of table with context menu
     function renderCell(value: any) {
@@ -301,9 +316,24 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                 title={(currentPageData) => (
                     <div>
                         <div>{props.title && props.title(currentPageData)}</div>
-                        <div style={{ display: "flex" }}>
+                        <div style={{ display: "flex", alignItems: 'center' }}>
                             {props.children}
-                            {props.search && <TableSearch searchValue={searchValue}
+                            {filters &&
+                            <Select placeholder="Filter By"
+                                                value={activeFilter}
+                                                onChange={onChangeFilter}
+                                                style={{minWidth: 150}}>
+                                                <Select.Option value={undefined}>
+                                                    All
+                                                </Select.Option>
+                                                {filters.map((filter, i) => <Select.Option value={i}>
+                                                        {filter.label}
+                                                </Select.Option>
+                                                )}
+                                              </Select>
+                            }
+                            {props.search &&
+                            <TableSearch searchValue={searchValue}
                                                           setSearchValue={setSearchValue}
                                                           columns={columns}
                                                           searchColumn={searchColumn}
@@ -312,10 +342,14 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                         </div>
                     </div>
                 )}
-                dataSource={(searchValue && filteredData) ? filteredData : tableData}
-                rowSelection={selectionConfig}
+                dataSource={(searchValue && filteredData) ? filterData(filteredData) : filterData(tableData)}
+                rowSelection={{
+                    selectedRowKeys: selectedRowKeys as (string[] | number[]),
+                    type: props.multipleSelection ? 'checkbox' as any: 'radio' as any,
+                    onChange: (keys: Keys) => selectionModel.set(keys as Key[])
+                }}
                 onRow={(record) => ({
-                    onClick: () => selectRow(record),
+                    // onClick: () => selectRow(record),
                     onContextMenu: () => selectRow(record),
                 })}
             />

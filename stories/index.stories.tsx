@@ -413,6 +413,7 @@ storiesOf("TableView", module)
             excludeColumns: ["languages", "continent"],
             defaultSorters: true
           }}
+          filters={[{ label: "Starts with A", condition: (record: any) => record.name[0] === "A"}]}
           queryName="countries"
           multipleSelection={true}
           onRowSelect={(keys: Keys) => console.log("Selected Row Keys:", keys)}

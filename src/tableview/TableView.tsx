@@ -160,7 +160,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
         onRemove(selectedRowKeys).then((res) => {
             // If confirmation is cancelled, response will be false
             if (res) {
-                // Deep copy data to prevent direct state mutation
+                // Copy data to prevent direct state mutation
                 let newTableData = Array.from(tableData);
                 measureTime("Table item removal", () => {
 
@@ -174,7 +174,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
 
                     // Using splice prevents React from listening to changes in tableData when an item is removed/changed, so
                     // any operation that's dependent upon that state change to trigger an update will not execute. Not as
-                    // performant, but seems manageable for the time being.
+                    // performant, but necessary for listening to data changes.
                     if (selectedRowKeys.length > 1) {
                         newTableData = newTableData.filter(d => !selectedRowKeys.includes(d.key))
                     } else {

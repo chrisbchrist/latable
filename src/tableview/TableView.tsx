@@ -349,7 +349,7 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                     onChange: (keys: Keys) => selectionModel.set(keys as Key[])
                 }}
                 onRow={(record) => ({
-                    // onClick: () => selectRow(record),
+                     onClick: () => selectRow(record),
                     onContextMenu: () => selectRow(record),
                 })}
             />

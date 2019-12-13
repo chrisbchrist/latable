@@ -1,6 +1,6 @@
 {
   "name": "@nextera/indigo",
-  "version": "0.4.15",
+  "version": "0.4.16",
   "private": false,
   "license": "UNLICENSED",
   "main": "dist/index.js",

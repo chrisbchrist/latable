@@ -322,11 +322,11 @@ export function TableView<T extends DomainEntity>( props: TableViewProps<T> ) {
                             <Select placeholder="Filter By"
                                                 value={activeFilter}
                                                 onChange={onChangeFilter}
-                                                style={{minWidth: 150}}>
+                                                style={{minWidth: 175, marginLeft: '1mm'}}>
                                                 <Select.Option value={undefined}>
                                                     All
                                                 </Select.Option>
-                                                {filters.map((filter, i) => <Select.Option value={i}>
+                                                {filters.map((filter, i) => <Select.Option value={i} key={filter.label + i}>
                                                         {filter.label}
                                                 </Select.Option>
                                                 )}

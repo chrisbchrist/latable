@@ -37,11 +37,11 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
             <Menu.Item key={undefined} title="All">
                 All
             </Menu.Item>
-            {columns.map((col: any) => {
+            {columns.map((col: any, i: number) => {
                 // For now, limit searchable columns to those that have searchable values in table data
                 if (col.dataKey)
                     return (
-                        <Menu.Item key={col.dataKey} title={col.title}>
+                        <Menu.Item key={col.dataKey || i + (i * Math.floor(Math.random() * 5))} title={col.title}>
                             {col.title}
                         </Menu.Item>
                     );

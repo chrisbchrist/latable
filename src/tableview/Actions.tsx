@@ -145,7 +145,6 @@ export interface ExportTableActionProps<T extends DomainEntity> extends TableAct
 export function ExportTableAction<T extends DomainEntity>(props: ExportTableActionProps<T>) {
     const { customText, name, fileName, fileExtension, ...rest } = props;
     const { columns, tableData } = useContext(TableViewContext);
-    console.log(columns);
 
     const ExportButton = (
         <TableActionBase<T>

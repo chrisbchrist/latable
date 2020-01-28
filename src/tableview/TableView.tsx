@@ -55,13 +55,13 @@ export interface TableViewContext<T extends DomainEntity> {
 export const TableViewContext = React.createContext<any>({});
 
 export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
-  const { columns, loading, title, filters, onRow, loadData, onRowSelect, ...otherProps } = props;
+  const { columns, loading, title, filters, onRow, loadData, onRowSelect, verboseToolbar, ...otherProps } = props;
   const getTableData = useCallback(() => (loadData ? loadData() : []), [loadData]);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
   const [tableData, setTableData] = useState<T[]>(getTableData());
   const [searchResults, setSearchResults] = useState<T[]>([]); // Results of search
-  const [verboseToolbar, setVerboseToolbar] = useState(props.verboseToolbar);
+  const [useVerboseToolbar, setVerboseToolbar] = useState(verboseToolbar);
   const [isLoading, setLoading] = useState(loading);
   const [searchValue, setSearchValue] = useState<string>("");
   const [searchColumn, setSearchColumn] = useState<string | undefined>(
@@ -73,17 +73,17 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
   // Since verboseToolbar & loading state is never called in the TableView component
   // we have to force it on change of related prop
   useEffect(() => {
-    setVerboseToolbar(props.verboseToolbar);
-  }, [props.verboseToolbar]);
+    setVerboseToolbar(verboseToolbar);
+  }, [verboseToolbar]);
   useEffect(() => {
-    setLoading(props.loading);
-  }, [props.loading]);
+    setLoading(loading);
+  }, [loading]);
   useEffect(() => {
     setTableData(getTableData());
   }, [loadData, getTableData]);
 
   const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
-      props.multipleSelection != undefined && props.multipleSelection,
+      props.multipleSelection !== undefined && props.multipleSelection,
       selectedRowKeys as Key[],
       setSelectedRowKeys
   );
@@ -134,7 +134,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
         setSearchResults(searchAllResults);
       });
     }
-  }, [tableData, selectionModel]);
+  }, [tableData, selectionModel, columns]);
 
   // Updates search results when a new search is run or when a search is active & the dataset is altered
   useEffect(() => {
@@ -147,7 +147,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
   // Runs optional callback on selected row keys when they change to expose them to external components
   useEffect(() => {
     onRowSelect && onRowSelect(selectedRowKeys);
-  }, [selectedRowKeys]);
+  }, [selectedRowKeys, onRowSelect]);
 
   useEffect(() => {
     const currentData = searchValue && searchResults ? searchResults : tableData;
@@ -270,14 +270,14 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     });
   }
 
-  function filterDataByCondition(data: Array<T>) {
+  const filterDataByCondition = useCallback((data: Array<T>) => {
     if (filters && activeFilter !== undefined) {
       const filteredData = data.filter(filters[activeFilter].condition);
       return filteredData;
 
     }
     return data;
-  }
+  }, [activeFilter, filters])
 
   function onChangeFilter(value: any) {
     setActiveFilter(value);
@@ -285,7 +285,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
 
   const context = {
     selectedRowKeys: selectedRowKeys,
-    verboseToolbar: verboseToolbar,
+    verboseToolbar: useVerboseToolbar,
     refreshData: refreshData,
     insertSelectedItem: insertSelectedItem,
     updateSelectedItem: updateSelectedItem,
@@ -345,9 +345,9 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
                   onChange={onChangeFilter}
                   style={{ minWidth: 175, marginLeft: "1mm" }}
                 >
-                  <Select.Option value={"Allfilter"}>All</Select.Option>
+                  <Select.Option value={undefined} key="allfilter">All</Select.Option>
                   {filters.map((filter, i) => (
-                    <Select.Option value={i} key={filter.label + i}>
+                    <Select.Option value={i} key={filter.label}>
                       {filter.label}
                     </Select.Option>
                   ))}

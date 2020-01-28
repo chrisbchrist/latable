@@ -82,13 +82,67 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     setTableData(getTableData());
   }, [loadData, getTableData]);
 
+  const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
+      props.multipleSelection != undefined && props.multipleSelection,
+      selectedRowKeys as Key[],
+      setSelectedRowKeys
+  );
+
+  const filterDataBySearch = useCallback((searchValue: any, columnToSearch?: string) => {
+    const allTableData = Array.from(tableData);
+    //TODO: Refactor nonsense conditional
+    if (!searchValue) {
+      setSearchResults([]);
+    } else if (columnToSearch && searchValue) {
+      //console.log(columnToSearch, searchValue);
+      setSearchResults(
+          allTableData.filter(d =>
+              d[columnToSearch]
+                  .toString()
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase())
+          )
+      );
+    } else if (!columnToSearch && searchValue) {
+      // Working, but probably not the most performant solution
+      measureTime("Search all data", () => {
+        // Limit searched columns to those with searchable data values
+        const columnsWithData = columns!
+            .filter((col: any) => col.dataIndex)
+            .map((col: any) => col.dataIndex);
+        let searchAllResults: any[] = [];
+        for (let i = 0; i < allTableData.length; i++) {
+          for (let j = 0; j < columnsWithData.length; j++) {
+            const columnValue = allTableData[i][columnsWithData[j]];
+            if (columnValue) {
+              if (
+                  columnValue
+                      .toString()
+                      .toLowerCase()
+                      .includes(searchValue.toLowerCase())
+              ) {
+                searchAllResults.push(allTableData[i]);
+                // Break loop when one column matches to prevent duplicate results
+                break;
+              }
+            }
+          }
+        }
+        // Removing row selections for now, as they may not exist in the results,
+        // but it shouldn't be too difficult to preserve them if necessary
+        selectionModel.set([]);
+        setSearchResults(searchAllResults);
+      });
+    }
+  }, [tableData, selectionModel]);
+
   // Updates search results when a new search is run or when a search is active & the dataset is altered
   useEffect(() => {
     //console.log(searchValue);
     if (searchValue) {
       filterDataBySearch(searchValue, searchColumn && searchColumn);
     }
-  }, [searchValue, tableData]);
+  }, [searchValue, tableData, filterDataBySearch, searchColumn]);
 
   // Runs optional callback on selected row keys when they change to expose them to external components
   useEffect(() => {
@@ -101,11 +155,6 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
       selectionModel.set(selectionModel.get().filter(s => availableKeys.includes(s)));
   }, [activeFilter, tableData]);
 
-  const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
-    props.multipleSelection != undefined && props.multipleSelection,
-    selectedRowKeys as Key[],
-    setSelectedRowKeys
-  );
 
   function selectRow(row?: T) {
     let selection = row ? row.key : undefined;
@@ -221,54 +270,6 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     });
   }
 
-  const filterDataBySearch = useCallback((searchValue: any, columnToSearch?: string) => {
-    const allTableData = Array.from(tableData);
-    //TODO: Refactor nonsense conditional
-    if (!searchValue) {
-      setSearchResults([]);
-    } else if (columnToSearch && searchValue) {
-      //console.log(columnToSearch, searchValue);
-      setSearchResults(
-        allTableData.filter(d =>
-          d[columnToSearch]
-            .toString()
-            .toLowerCase()
-            .includes(searchValue.toLowerCase())
-        )
-      );
-    } else if (!columnToSearch && searchValue) {
-      // Working, but probably not the most performant solution
-      measureTime("Search all data", () => {
-        // Limit searched columns to those with searchable data values
-        const columnsWithData = columns!
-          .filter((col: any) => col.dataIndex)
-          .map((col: any) => col.dataIndex);
-        let searchAllResults: any[] = [];
-        for (let i = 0; i < allTableData.length; i++) {
-          for (let j = 0; j < columnsWithData.length; j++) {
-            const columnValue = allTableData[i][columnsWithData[j]];
-            if (columnValue) {
-              if (
-                columnValue
-                  .toString()
-                  .toLowerCase()
-                  .includes(searchValue.toLowerCase())
-              ) {
-                searchAllResults.push(allTableData[i]);
-                // Break loop when one column matches to prevent duplicate results
-                break;
-              }
-            }
-          }
-        }
-        // Removing row selections for now, as they may not exist in the results,
-        // but it shouldn't be too difficult to preserve them if necessary
-        selectionModel.set([]);
-        setSearchResults(searchAllResults);
-      });
-    }
-  }, [tableData, selectionModel]);
-
   function filterDataByCondition(data: Array<T>) {
     if (filters && activeFilter !== undefined) {
       const filteredData = data.filter(filters[activeFilter].condition);
@@ -344,7 +345,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
                   onChange={onChangeFilter}
                   style={{ minWidth: 175, marginLeft: "1mm" }}
                 >
-                  <Select.Option value={undefined}>All</Select.Option>
+                  <Select.Option value={"Allfilter"}>All</Select.Option>
                   {filters.map((filter, i) => (
                     <Select.Option value={i} key={filter.label + i}>
                       {filter.label}

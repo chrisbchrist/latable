@@ -34,7 +34,7 @@ export const TableSearch: FunctionComponent<TableSearchProps> = ({ searchValue, 
 
     const columnMenu = columns && (
         <Menu onClick={onClickMenu}>
-            <Menu.Item key={undefined} title="All">
+            <Menu.Item key={"unique"} title="All">
                 All
             </Menu.Item>
             {columns.map((col: any, i: number) => {

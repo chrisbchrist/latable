@@ -31,6 +31,7 @@ import {Keys} from "../src/domain/Domain";
 import {ResizeWrapper} from "../src/tableview/newtable/ResizeWrapper";
 import { VirtualizedTable } from "../src/tableview/virtualizedtable/VirtualizedTable";
 import "antd/dist/antd.min.css";
+import {TestTable} from "./TestTable";
 
 
 const newColumns = [
@@ -415,9 +416,14 @@ storiesOf("TableView", module)
           }}
           filters={[{ label: "Starts with A", condition: (record: any) => record.name[0] === "A"}]}
           queryName="countries"
-          multipleSelection={true}
+          // multipleSelection={true}
           onRowSelect={(keys: Keys) => console.log("Selected Row Keys:", keys)}
           search={true}
       />
   );
-});
+})
+    .add("Test Table", () => {
+      return (
+          <TestTable/>
+      )
+    })

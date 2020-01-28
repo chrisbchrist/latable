@@ -22,7 +22,7 @@ class MultipleSelectionModel<T> implements SelectionModel<T> {
     constructor( protected current: T[], protected update: (s: T[]) => void ){}
 
     isEmpty(): boolean  {
-        return this.current.length == 0;
+        return this.current.length === 0;
     }
 
     contains(key: T): boolean {

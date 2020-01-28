@@ -104,7 +104,7 @@ export function UpdateTableAction<T extends DomainEntity>(props: UpdateTableActi
         <TableActionBase<T>
             text={ customText || "Edit"}
             icon="edit"
-            isCtxValid={ ctx => ctx.selectedRowKeys.length == 1 }
+            isCtxValid={ ctx => ctx.selectedRowKeys.length === 1 }
             doPerform={ ctx => ctx.updateSelectedItem(onUpdate) }
             {...rest}
         />
@@ -126,7 +126,7 @@ export function RemoveTableAction<T extends DomainEntity>(props: RemoveTableActi
             text={ customText || "Delete"}
             icon="delete"
             {...rest}
-            isCtxValid= { ctx => ctx.selectedRowKeys.length == 1 || !!(multiple && ctx.selectedRowKeys.length > 0)}
+            isCtxValid= { ctx => ctx.selectedRowKeys.length === 1 || !!(multiple && ctx.selectedRowKeys.length > 0)}
             doPerform = { ctx => ctx.removeSelectedItem(onRemove) }
         />
     );

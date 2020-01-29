@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { Select, Table } from "antd";
 import { DomainEntity, Key, Keys } from "../domain/Domain";
 import SelectionModel, { getSelectionModel } from "./SelectionModel";
@@ -67,12 +67,15 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     ...otherProps
   } = props;
 
-  const getTableData = useCallback(() => (loadData ? loadData() : []), [
+  const getTableData = useMemo(() => {
+    return loadData ? loadData() : [];
+  }, [
     loadData
   ]);
+
   const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
-  const [tableData, setTableData] = useState<T[]>(getTableData());
-  const [filteredData, setFilteredData] = useState<T[]>([]); // Results of search
+  const [tableData, setTableData] = useState<T[]>(getTableData);
+  const [filteredData, setFilteredData] = useState<T[]>([]); // Results of search/filter
   const [useVerboseToolbar, setVerboseToolbar] = useState(verboseToolbar);
   const [isLoading, setLoading] = useState(loading);
   const [searchValue, setSearchValue] = useState<string>("");
@@ -91,8 +94,9 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     setLoading(loading);
   }, [loading]);
   useEffect(() => {
-    setTableData(getTableData());
-  }, [loadData, getTableData]);
+    console.log("Get table data");
+    setTableData(getTableData);
+  }, [getTableData]);
 
   const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
     props.multipleSelection !== undefined && props.multipleSelection,
@@ -104,15 +108,14 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     (data: Array<T>) => {
         // activeFilter is an index, and since 0 is a falsy value but still valid, we need to explicitly check for undefined
       if (filters && activeFilter !== undefined) {
-        const filteredData = data.filter(filters[activeFilter].condition);
-        return filteredData;
+        return data.filter(filters[activeFilter].condition);
       }
       return data;
     },
     [activeFilter, filters]
   );
 
-  const filterData = (searchValue: any, columnToSearch?: string) => {
+  const filterData = ( searchValue: any, columnToSearch?: string) => {
     let allTableData = Array.from(tableData);
     if (!searchValue) {
       const filterResults = filterDataByCondition(allTableData);
@@ -154,7 +157,6 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
           }
         }
         let filteredResults = filterDataByCondition(searchAllResults);
-        console.log("Filtered", filteredResults);
         // Removing row selections for now, as they may not exist in the results,
         // but it shouldn't be too difficult to preserve them if necessary
         selectionModel.set([]);
@@ -165,12 +167,9 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
 
   // Updates search/filter results when a new search is run, filter is changed, or when a search/filter is active & the dataset is altered
   useEffect(() => {
-    console.log(searchValue, tableData, activeFilter);
-    if (searchValue || activeFilter !== undefined) {
       console.log("Running filter");
       filterData(searchValue, searchColumn && searchColumn);
-    }
-  }, [searchValue, tableData, searchColumn, activeFilter]);
+  }, [searchValue, searchColumn, activeFilter, tableData]);
 
   // Runs optional callback on selected row keys when they change to expose them to external components
   useEffect(() => {

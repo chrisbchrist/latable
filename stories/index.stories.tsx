@@ -117,6 +117,23 @@ function age(bd: Date): number {
   return Math.abs(Math.floor(diff / 365.25));
 }
 
+function generatePeople(n: number) {
+  const instruments = ['Accordion', 'Piccolo', 'Air Guitar', 'Hot Pocket', 'Spoon', 'Kazoo'];
+  let output = [];
+  for (let i = 0; i < n; i++) {
+    output.push({
+      key: i,
+      firstName: "Person",
+      lastName: `McPersonface ${i}`,
+      age: 45 + i,
+      profession: `${instruments[Math.floor(Math.random() * instruments.length)]} Virtuoso`
+    })
+  }
+  return output;
+};
+
+const loadNewData = () => generatePeople(10000);
+
 const data: any= [
   {
     key: uuid4(),
@@ -250,9 +267,9 @@ storiesOf("New Table", module)
     .add("Test", () => {
       return <NewTable
                 columns={newColumns}
-                loadData={() => data}
+                loadData={loadNewData}
                 rowSelection={"multiple"}
-                onRowSelect={(keys) => console.log(keys)}
+                //onRowSelect={(keys) => console.log(keys)}
                 multipleSelection={true}
                 search={true}
       />

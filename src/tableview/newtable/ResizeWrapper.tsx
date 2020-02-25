@@ -3,7 +3,7 @@ import { useWindowSize } from "./useWindowSize";
 
 // Wrapper component which renders a function to dynamically resize the BaseTable (or any other child)
 // based on browser window size.  May make sense to add implementation that tracks parent div size
-export const ResizeWrapper: FunctionComponent = (props: any) => {
+export const ResizeWrapper: FunctionComponent<any> = ({ children }) => {
     // Custom hook tracks browser window size
     const [width, height] = useWindowSize();
 
@@ -17,7 +17,7 @@ export const ResizeWrapper: FunctionComponent = (props: any) => {
 
     return (
         <div ref={container}>
-            {props.children(width, height)}
+            {children(width, height)}
         </div>
     )
 };

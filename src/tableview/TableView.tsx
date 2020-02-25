@@ -94,7 +94,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
     setLoading(loading);
   }, [loading]);
   useEffect(() => {
-    console.log("Get table data");
+    //console.log("Get table data");
     setTableData(getTableData);
   }, [getTableData]);
 
@@ -167,7 +167,7 @@ export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
 
   // Updates search/filter results when a new search is run, filter is changed, or when a search/filter is active & the dataset is altered
   useEffect(() => {
-      console.log("Running filter");
+      //console.log("Running filter");
       filterData(searchValue, searchColumn && searchColumn);
   }, [searchValue, searchColumn, activeFilter, tableData]);
 

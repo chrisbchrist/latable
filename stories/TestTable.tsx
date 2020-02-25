@@ -13,14 +13,14 @@ const columns = [
   { title: "Name", dataIndex: "name" }
 ];
 
-const testData = [
-  { key: 1, name: "Jimbo Williamson" },
-  { key: 2, name: "Mr. Funnyface" },
-  { key: 3, name: "Bilbo Thriftworth" },
-  { key: 4, name: "Rutherford Wonkington" },
-  { key: 5, name: "Constance Bunker" },
-  { key: 6, name: "Widdlepop Silversmith" }
-];
+// const testData = [
+//   { key: 1, name: "Jimbo Williamson" },
+//   { key: 2, name: "Mr. Funnyface" },
+//   { key: 3, name: "Bilbo Thriftworth" },
+//   { key: 4, name: "Rutherford Wonkington" },
+//   { key: 5, name: "Constance Bunker" },
+//   { key: 6, name: "Widdlepop Silversmith" }
+// ];
 
 const otherData = [
   { key: 1, name: "Jimbo Williamson" },
@@ -31,6 +31,17 @@ const otherData = [
   { key: 11, name: "Different" },
   { key: 12, name: "Test" }
 ];
+
+const generateData = (n: number) => {
+  let output = [];
+  for (let i = 0; i < n; i++) {
+    output.push({
+      key: i,
+      name: `I am person #${i}`
+    })
+  }
+  return output;
+}
 
 export const TestTable: FunctionComponent<any> = props => {
   const { data, ...rest } = props;
@@ -45,7 +56,7 @@ export const TestTable: FunctionComponent<any> = props => {
     setDataFlag(e.target.checked);
   };
 
-  const loadData = useCallback(() => (dataFlag ? otherData : testData), [dataFlag]);
+  const loadData = useCallback(() => (dataFlag ? otherData : generateData(1000)), [dataFlag]);
 
   return (
     <div>
@@ -56,7 +67,6 @@ export const TestTable: FunctionComponent<any> = props => {
         loading={false}
         loadData={loadData}
         verboseToolbar={true}
-        scroll={{ x: 1400 }}
         disableContextMenu={true}
         onRowSelect={onRowSelect}
         multipleSelection={true}

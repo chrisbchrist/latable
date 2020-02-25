@@ -3,6 +3,7 @@ import {useLayoutEffect, useState } from 'react';
 // Custom hook to track window size
 export function useWindowSize() {
     let [size, setSize] = useState([0, 0]);
+
     useLayoutEffect(() => {
         function updateSize() {
             setSize([window.innerWidth, window.innerHeight]);
@@ -11,6 +12,7 @@ export function useWindowSize() {
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
+
     return size;
 }
 

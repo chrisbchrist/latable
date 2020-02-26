@@ -17,3 +17,16 @@
     background: rgba(255,255,255,0.7);
 }
 
+.empty__wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #ccc
+}
+
+.empty__icon {
+    font-size: 40px;
+}
+

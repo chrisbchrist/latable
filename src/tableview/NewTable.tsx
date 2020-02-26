@@ -3,8 +3,7 @@
     Selection cells, responsive columns, loading animations
  */
 
-import React, { useEffect, useMemo, useState } from "react";
-// import {Table} from 'antd';
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { DomainEntity, Key, Keys } from "../domain/Domain";
 import SelectionModel, { getSelectionModel } from "./SelectionModel";
 import { MemoizedSelectionCell } from "./newtable/SelectionCell";
@@ -14,7 +13,6 @@ import Menu from "antd/es/menu";
 import { Spin } from "antd";
 import { ContextMenuDropdown } from "./ContextMenuDropdown";
 import { TableAction } from "./Actions";
-// import {TableSearch} from "../search/TableSearch";
 import { measureTime } from "../Tools";
 import uuid from "uuid";
 import "react-base-table/styles.css";
@@ -23,6 +21,7 @@ import "./newtable/NewTable.css";
 import BaseTable from "react-base-table";
 import { TableSearch } from "../search/TableSearch";
 import whyDidYouRender from "@welldone-software/why-did-you-render";
+import Icon from "antd/es/icon";
 
 whyDidYouRender(React);
 
@@ -78,7 +77,8 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
     height,
     disableContextMenu,
     children,
-    search
+    search,
+      filters
   } = props;
   const getTableData = () => (props.loadData ? props.loadData() : []);
 
@@ -91,6 +91,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
   const [searchColumn, setSearchColumn] = useState<string | undefined>(
     undefined
   ); // Column to search in if specified
+  const [activeFilter, setActiveFilter] = useState<any>(undefined);
 
   // All the keys in the tableData
   const allKeys = useMemo(() => {
@@ -123,10 +124,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
 
   useEffect(() => {
     props.onRowSelect && props.onRowSelect(selectedRowKeys);
-    if (JSON.stringify(selectedRowKeys.sort()) == JSON.stringify(allKeys.sort())) {
-      console.log("Everything is checked bitches");
-    }
-  }, [selectedRowKeys, allKeys]);
+  }, [selectedRowKeys, tableData]);
 
   useEffect(() => {
     if (rowSelection) {
@@ -301,7 +299,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
         // Removing row selections for now, as they may not exist in the results,
         // but it shouldn't be too difficult to preserve them if necessary
         selectionModel.set([]);
-        console.log(searchAllResults);
+        console.log("Search Results:", searchAllResults);
         setFilteredData(searchAllResults);
       });
     }
@@ -309,6 +307,8 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
 
   const context = useMemo(() => {
     return {
+      columns,
+      tableData,
       selectedRowKeys,
       verboseToolbar,
       refreshData,
@@ -318,7 +318,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
       selectionModel,
       allKeys
     };
-  }, [selectedRowKeys, selectionModel, verboseToolbar]);
+  }, [selectedRowKeys, selectionModel, verboseToolbar, columns, tableData]);
 
   function buildContextMenu() {
     return (
@@ -374,42 +374,29 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
       };
       return [selectionColumn, ...props.columns.map(mapColumns)];
     }
-
     // Replace rendering of the table values to show context menu
     return props.columns && props.columns.map(mapColumns);
   }
 
+  const overlayRenderer = useCallback(() => (
+      <>
+        {isLoading && (
+            <div className="newtable__loader">
+              <Spin tip="Loading..." />
+            </div>
+        )}
+      </>
+  ), [isLoading]);
+
+  const emptyRenderer = useCallback(() => (
+      <div className="empty__wrapper">
+        <Icon type="folder" className="empty__icon"/>
+        <span>No Data</span>
+      </div>
+  ), []);
+
   return (
     <TableViewContext.Provider value={context}>
-      {/*<Table*/}
-      {/*    {... otherProps}*/}
-      {/*    columns={decoratedColumns()}*/}
-      {/*    loading={isLoading}*/}
-      {/*    title={(currentPageData) => (*/}
-      {/*        <div>*/}
-      {/*            <div>{props.title && props.title(currentPageData)}</div>*/}
-      {/*            <div style={{ display: "flex" }}>*/}
-      {/*                {props.children}*/}
-      {/*                {props.search && <TableSearch searchValue={searchValue}*/}
-      {/*                                              setSearchValue={setSearchValue}*/}
-      {/*                                              columns={columns}*/}
-      {/*                                              searchColumn={searchColumn}*/}
-      {/*                                              setSearchColumn={setSearchColumn}*/}
-      {/*                />}*/}
-      {/*            </div>*/}
-      {/*        </div>*/}
-      {/*    )}*/}
-      {/*    dataSource={(searchValue && filteredData) ? filteredData : tableData}*/}
-      {/*    rowSelection={{*/}
-      {/*        selectedRowKeys: selectedRowKeys,*/}
-      {/*        type: props.multipleSelection ? 'checkbox': 'radio',*/}
-      {/*        onChange: (keys) => selectionModel.set(keys as Key[])*/}
-      {/*    }}*/}
-      {/*    onRow={(record) => ({*/}
-      {/*        onClick: () => selectRow(record),*/}
-      {/*        onContextMenu: () => selectRow(record),*/}
-      {/*    })}*/}
-      {/*/>*/}
       <div className="newtable__wrapper" style={{ width: 1000 }}>
         <div className="newtable__header">
           <div style={{ display: "flex" }}>
@@ -436,15 +423,8 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
             },
             onContextMenu: (rowData: T) => selectRow(rowData)
           }}
-          overlayRenderer={() => (
-            <>
-              {isLoading && (
-                <div className="newtable__loader">
-                  <Spin tip="Loading..." />
-                </div>
-              )}
-            </>
-          )}
+          overlayRenderer={overlayRenderer}
+          emptyRenderer={emptyRenderer}
         />
       </div>
     </TableViewContext.Provider>

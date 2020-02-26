@@ -16,7 +16,7 @@ interface SelectionCellProps {
 export const SelectionCell: FunctionComponent<SelectionCellProps> = ({ rowData, rowIndex, column, selected }) => {
 
     const handleChange = (e: CheckboxChangeEvent) => {
-        console.log(e.target.checked);
+        console.log(rowIndex, rowData);
         const { onChange } = column;
         onChange(rowIndex, rowData);
     };

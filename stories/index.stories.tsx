@@ -19,7 +19,7 @@ import {
   RemoveTableAction,
   UpdateTableAction
 } from "../src/tableview/Actions";
-
+import {NewExportTableAction} from "../src/tableview/newtable/NewActions";
 import "../src/indigo.css";
 import PersonForm from "./PersonForm";
 import Modals from "../src/modal/ModalContaner";
@@ -32,6 +32,7 @@ import {ResizeWrapper} from "../src/tableview/newtable/ResizeWrapper";
 import { VirtualizedTable } from "../src/tableview/virtualizedtable/VirtualizedTable";
 import "antd/dist/antd.min.css";
 import {TestTable} from "./TestTable";
+import {NewTableTest} from "./NewTableTest";
 
 
 const newColumns = [
@@ -118,7 +119,7 @@ function age(bd: Date): number {
 }
 
 function generatePeople(n: number) {
-  const instruments = ['Accordion', 'Piccolo', 'Air Guitar', 'Hot Pocket', 'Spoon', 'Kazoo'];
+  const instruments = ['Accordion Virtuoso', 'Hot Pocket Manufacturer', 'Dog Polisher', 'Digital Content Regurgitator', 'Spoon Tycoon', 'Quesadilla Engineer', 'Bridge Salesman'];
   let output = [];
   for (let i = 0; i < n; i++) {
     output.push({
@@ -126,7 +127,7 @@ function generatePeople(n: number) {
       firstName: "Person",
       lastName: `McPersonface ${i}`,
       age: 45 + i,
-      profession: `${instruments[Math.floor(Math.random() * instruments.length)]} Virtuoso`
+      profession: instruments[Math.floor(Math.random() * instruments.length)]
     })
   }
   return output;
@@ -269,10 +270,17 @@ storiesOf("New Table", module)
                 columns={newColumns}
                 loadData={loadNewData}
                 rowSelection={"multiple"}
-                //onRowSelect={(keys) => console.log(keys)}
+                onRowSelect={(keys) => console.log(keys)}
                 multipleSelection={true}
                 search={true}
-      />
+                verboseToolbar={true}
+                //loading={true}
+      >
+        <NewExportTableAction/>
+      </NewTable>
+    })
+    .add("With Key Counter", () => {
+      return <NewTableTest/>
     })
     .add("Resize Wrapper", () => {
       const testStyles = (w: any, h: any) => {

@@ -30,7 +30,7 @@ export const SelectionHeader: FunctionComponent<any> = ({
   );
 
   useEffect(() => {
-    setChecked(simpleArrayEquals(selectedRowKeys, allKeys));
+    setChecked(simpleArrayEquals(selectedRowKeys, allKeys) && selectedRowKeys.length > 0);
     setIndeterminate(selectedRowKeys.length > 0 && selectedRowKeys.length < allKeys.length);
   }, [selectedRowKeys, allKeys]);
 

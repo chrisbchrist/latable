@@ -3,14 +3,20 @@
     Selection cells, responsive columns, loading animations
  */
 
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import { DomainEntity, Key, Keys } from "../domain/Domain";
 import SelectionModel, { getSelectionModel } from "./SelectionModel";
 import { MemoizedSelectionCell } from "./newtable/SelectionCell";
 import { SelectionHeader } from "./newtable/SelectionHeader";
 import { ColumnProps } from "antd/es/table";
 import Menu from "antd/es/menu";
-import { Spin } from "antd";
+import Spin from "antd/es/spin";
 import { ContextMenuDropdown } from "./ContextMenuDropdown";
 import { TableAction } from "./Actions";
 import { measureTime } from "../Tools";
@@ -31,6 +37,7 @@ export interface BaseTableProps<T> {
   columns: Array<any>;
   width?: number;
   height?: number;
+  fixed?: boolean;
 }
 
 export interface NewTableProps<T extends DomainEntity>
@@ -68,8 +75,11 @@ export interface TableViewContext<T extends DomainEntity> {
 
 export const TableViewContext = React.createContext<any>({});
 
-export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
+export function NewTable<T extends DomainEntity>(
+  props: NewTableProps<T>
+): ReactElement {
   const {
+    loadData,
     columns,
     loading,
     rowSelection,
@@ -78,20 +88,23 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
     disableContextMenu,
     children,
     search,
-      filters
+    title,
+    verboseToolbar,
+    multipleSelection,
+    onRowSelect,
+    ...rest
   } = props;
-  const getTableData = () => (props.loadData ? props.loadData() : []);
+  const getTableData = () => (loadData ? loadData() : []);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState<Keys>([]);
   const [tableData, setTableData] = useState<T[]>(getTableData());
   const [filteredData, setFilteredData] = useState<T[]>([]); // Results of search
-  const [verboseToolbar, setVerboseToolbar] = useState(props.verboseToolbar);
+  const [verbose, setVerboseToolbar] = useState(verboseToolbar);
   const [isLoading, setLoading] = useState(loading);
   const [searchValue, setSearchValue] = useState<string>("");
   const [searchColumn, setSearchColumn] = useState<string | undefined>(
     undefined
   ); // Column to search in if specified
-  const [activeFilter, setActiveFilter] = useState<any>(undefined);
 
   // All the keys in the tableData
   const allKeys = useMemo(() => {
@@ -103,16 +116,16 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
   // Since verboseToolbar & loading state is never called in the TableView component
   // we have to force it on change of related prop
   useEffect(() => {
-    setVerboseToolbar(props.verboseToolbar);
-  }, [props.verboseToolbar]);
+    setVerboseToolbar(verboseToolbar);
+  }, [verboseToolbar]);
 
   useEffect(() => {
-    setLoading(props.loading);
-  }, [props.loading]);
+    setLoading(loading);
+  }, [loading]);
 
   useEffect(() => {
     setTableData(getTableData());
-  }, [props.loadData]);
+  }, [loadData]);
 
   // Updates search results when a new search is run or when the dataset is altered
   useEffect(() => {
@@ -123,18 +136,16 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
   }, [searchValue, tableData]);
 
   useEffect(() => {
-    props.onRowSelect && props.onRowSelect(selectedRowKeys);
+    onRowSelect && onRowSelect(selectedRowKeys);
   }, [selectedRowKeys, tableData]);
 
   useEffect(() => {
     if (rowSelection) {
       const selectionColumn = {
         width: 40,
-        resizable: false,
         cellRenderer: MemoizedSelectionCell,
         key: "__selection__",
         rowKey: "key",
-        selectedRowKeys,
         onChange: (keys: Keys, rowData: T, rowIndex: any) =>
           selectionModel.set(keys as Key[])
       };
@@ -143,7 +154,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
   }, []);
 
   const selectionModel: SelectionModel<Key> = getSelectionModel<Key>(
-    props.multipleSelection != undefined && props.multipleSelection,
+    multipleSelection != undefined && multipleSelection,
     selectedRowKeys as Key[],
     setSelectedRowKeys
   );
@@ -160,10 +171,10 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
   }
 
   function refreshData() {
-    if (props.loadData) {
+    if (loadData) {
       try {
         setLoading(true);
-        setTableData(props.loadData());
+        setTableData(loadData());
       } finally {
         setLoading(false);
       }
@@ -310,7 +321,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
       columns,
       tableData,
       selectedRowKeys,
-      verboseToolbar,
+      verbose,
       refreshData,
       insertSelectedItem,
       updateSelectedItem,
@@ -318,7 +329,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
       selectionModel,
       allKeys
     };
-  }, [selectedRowKeys, selectionModel, verboseToolbar, columns, tableData]);
+  }, [selectedRowKeys, selectionModel, verbose, columns, tableData]);
 
   function buildContextMenu() {
     return (
@@ -346,7 +357,6 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
         : renderCell
     };
   }
-
 
   function decoratedColumns(): ColumnProps<T>[] | undefined {
     if (disableContextMenu) return columns;
@@ -378,28 +388,35 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
     return props.columns && props.columns.map(mapColumns);
   }
 
-  const overlayRenderer = useCallback(() => (
+  const overlayRenderer = useCallback(
+    () => (
       <>
         {isLoading && (
-            <div className="newtable__loader">
-              <Spin tip="Loading..." />
-            </div>
+          <div className="newtable__loader">
+            <Spin tip="Loading..." />
+          </div>
         )}
       </>
-  ), [isLoading]);
+    ),
+    [isLoading]
+  );
 
-  const emptyRenderer = useCallback(() => (
+  const emptyRenderer = useCallback(
+    () => (
       <div className="empty__wrapper">
-        <Icon type="folder" className="empty__icon"/>
+        <Icon type="folder" className="empty__icon" />
         <span>No Data</span>
       </div>
-  ), []);
+    ),
+    []
+  );
 
   return (
     <TableViewContext.Provider value={context}>
       <div className="newtable__wrapper" style={{ width: 1000 }}>
         <div className="newtable__header">
           <div style={{ display: "flex" }}>
+            {title && title()}
             {children}
             {search && (
               <TableSearch
@@ -425,6 +442,7 @@ export function NewTable<T extends DomainEntity>(props: NewTableProps<T>) {
           }}
           overlayRenderer={overlayRenderer}
           emptyRenderer={emptyRenderer}
+          {...rest}
         />
       </div>
     </TableViewContext.Provider>

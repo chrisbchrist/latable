@@ -4,8 +4,7 @@ import React, {
   useEffect,
   useState
 } from "react";
-import Checkbox from "antd/es/checkbox";
-import { CheckboxChangeEvent } from "antd/lib/checkbox";
+import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 import { TableViewContext } from "../NewTable";
 
 // This method simply sorts and stringifies an array, then compares to determine equality. This will not work

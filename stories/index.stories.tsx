@@ -1,16 +1,10 @@
 import React from "react";
 const uuid4 = require("uuid/v4");
 //@ts-ignore
-import {generateData } from 'react-base-table'
-
-// const sampleData = generateData(10000);
-// console.log(sampleData)
 import { storiesOf } from "@storybook/react";
 import { withKnobs, boolean } from "@storybook/addon-knobs";
-
 import {Divider, Tag} from "antd";
 import {NewTable} from "../src/tableview/NewTable";
-
 import TableView from "../src/tableview/TableView";
 import {
   ExportTableAction,
@@ -110,7 +104,6 @@ const virtualData = [
   { name: 'Sally Findow', description: 'Software engineer' },
   { name: 'Mac Attax', description: 'Software engineer' },
   { name: 'Bilbo Silverworth', description: 'Software engineer' }
-  // And so on...
 ];
 
 function age(bd: Date): number {
@@ -119,7 +112,7 @@ function age(bd: Date): number {
 }
 
 function generatePeople(n: number) {
-  const instruments = ['Accordion Virtuoso', 'Hot Pocket Manufacturer', 'Dog Polisher', 'Digital Content Regurgitator', 'Spoon Tycoon', 'Quesadilla Engineer', 'Bridge Salesman'];
+  const jobs = ['Accordion Virtuoso', 'Hot Pocket Manufacturer', 'Dog Polisher', 'Digital Content Regurgitator', 'Spoon Tycoon', 'Quesadilla Engineer', 'Bridge Salesman'];
   let output = [];
   for (let i = 0; i < n; i++) {
     output.push({
@@ -127,11 +120,11 @@ function generatePeople(n: number) {
       firstName: "Person",
       lastName: `McPersonface ${i}`,
       age: 45 + i,
-      profession: instruments[Math.floor(Math.random() * instruments.length)]
+      profession: jobs[Math.floor(Math.random() * jobs.length)]
     })
   }
   return output;
-};
+}
 
 const loadNewData = () => generatePeople(10000);
 
@@ -239,6 +232,7 @@ function UseTableViewWithGraphQL() {
 }
 
 function UseApolloTableView(props: any) {
+
   return (
     <ApolloTableView
       client={CountrySupport.client}
@@ -281,6 +275,21 @@ storiesOf("New Table", module)
     })
     .add("With Key Counter", () => {
       return <NewTableTest/>
+    })
+    .add("Single Selection", () => {
+      return (<NewTable
+          columns={newColumns}
+          loadData={loadNewData}
+          rowSelection={"single"}
+          onRowSelect={(keys) => console.log(keys)}
+          multipleSelection={true}
+          search={true}
+          verboseToolbar={true}
+          //loading={true}
+      >
+        <NewExportTableAction/>
+      </NewTable>
+      )
     })
     .add("Resize Wrapper", () => {
       const testStyles = (w: any, h: any) => {
@@ -451,4 +460,4 @@ storiesOf("TableView", module)
       return (
           <TestTable/>
       )
-    })
+    });

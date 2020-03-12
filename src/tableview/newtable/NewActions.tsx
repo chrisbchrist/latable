@@ -13,7 +13,6 @@ import { DomainEntity } from "../../domain/Domain";
 import { Omit } from "antd/es/_util/type";
 import { ContextMenuDropdownContext } from "../ContextMenuDropdown";
 import ReactExport from "react-export-excel";
-// import { ColumnProps } from "antd/lib/table";
 
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
@@ -41,7 +40,6 @@ function TableActionBase<T extends DomainEntity>(config: TableActionConfig<T>) {
     (!isCtxValid || isCtxValid(tableContext)) && (!isValid || isValid());
 
   if (menuContext) {
-    // Show action as a menu item since it is withing menu tableContext
 
     return (
       <ActionMenuItem
@@ -58,7 +56,7 @@ function TableActionBase<T extends DomainEntity>(config: TableActionConfig<T>) {
     return (
       <ActionButton
         perform={() => doPerform(tableContext)}
-        verbose={tableContext.verboseToolbar}
+        verbose={tableContext.verbose}
         disabled={!enabled}
         {...otherProps}
       />

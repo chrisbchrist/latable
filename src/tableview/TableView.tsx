@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {ReactElement, useCallback, useEffect, useMemo, useState} from "react";
 import { Select, Table } from "antd";
 import { DomainEntity, Key, Keys } from "../domain/Domain";
 import SelectionModel, { getSelectionModel } from "./SelectionModel";
@@ -54,7 +54,7 @@ export interface TableViewContext<T extends DomainEntity> {
 
 export const TableViewContext = React.createContext<any>({});
 
-export function TableView<T extends DomainEntity>(props: TableViewProps<T>) {
+export function TableView<T extends DomainEntity>(props: TableViewProps<T>): ReactElement {
   const {
     columns,
     loading,

@@ -67,7 +67,7 @@ class SingleSelectionModel<T> extends MultipleSelectionModel<T> {
     }
 
     set(selection: T[]): void {
-        this.update( (selection && selection.length > 0? [selection[0]]: []) )
+        this.update( (selection && selection.length > 0 ? [selection[0]] : []) )
     }
 
     add(selection: T[]): void {

@@ -2,8 +2,10 @@ import React, {
     FunctionComponent,
     useState
 } from "react";
-import { Input, Dropdown, Icon, Menu } from "antd";
-import { ClickParam } from "antd/es/menu";
+import Input from "antd/es/input";
+import Dropdown from "antd/es/dropdown";
+import Icon from "antd/es/icon";
+import Menu, {ClickParam} from "antd/es/menu";
 import {ColumnProps} from "antd/lib/table";
 
 interface TableSearchProps {
